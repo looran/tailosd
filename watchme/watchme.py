@@ -105,9 +105,11 @@ class Watchme_user(multiprocessing.Process):
                 if not evt:
                     return None # drop event
             except Exception, e:
+                print e
+                self.logger.warn(traceback.print_exc())
                 evt_expt=Watchme_event(SEVERITY_HIGH, "Watchme", "Watchme EXCEPTION: filter %s failed to handle the following event:" % f)
-                self._print_event(evt_expt)
-                self._print_event(evt)
+                self._print(evt_expt)
+                self._print(evt)
                 continue
         return evt
 
