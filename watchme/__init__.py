@@ -1,1 +1,1 @@
-from .watchme import Watchme
+from .watchme import *
