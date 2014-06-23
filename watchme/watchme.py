@@ -188,7 +188,7 @@ class Watchme(object):
         self.logger.info("Watchme exiting ok")
 
     def _conf_init(self):
-        self.conf = Watchme_conf(filters_enabled=['default_syslog', 'default_syslog_iptables'])
+        self.conf = Watchme_conf(filters_enabled=['default_syslog', 'default_syslog_iptables', 'default_arpwatch'])
 
     def _logger_init(self):
         self.logger = multiprocessing.log_to_stderr() # XXX implement process-safe logger
