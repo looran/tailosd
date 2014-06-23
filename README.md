@@ -9,3 +9,9 @@ Displays system logs on screen using OSD
 sudo watchme
 ```
 
+### Install
+
+```bash
+sudo python setup.py install
+```
+
