@@ -15,3 +15,8 @@ sudo watchme
 sudo python setup.py install
 ```
 
+### Demo
+
+Little video:
+
+http://gouloum.fr/x/20140623_162112_watchme_demo_1.ogv
