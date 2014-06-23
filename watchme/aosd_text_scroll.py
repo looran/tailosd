@@ -22,13 +22,13 @@ class Aosd_text_scroll_entry(object):
         self.state = Aosd_text_scroll_entry.STATE_NEW
 
     def show(self):
-        print "XXX Aosd_text_scroll_entry.show %s (w=%d, h=%d, color=%s)" % (self.text, self.w, self.h, self.color)
+        #print "XXX Aosd_text_scroll_entry.show %s (w=%d, h=%d, color=%s)" % (self.text, self.w, self.h, self.color)
         self.time_show = time.time()
         self.osd.show()
         self.osd.loop_once()
 
     def move_to_line(self, line_num):
-        print "XXX Aosd_text_scroll_entry.move_to_line %d" % line_num
+        #print "XXX Aosd_text_scroll_entry.move_to_line %d" % line_num
         y = Aosd_text_scroll_entry.TOP_SPACE + (line_num * (self.font_size + Aosd_text_scroll_entry.LINE_SPACE))
         self.osd.set_geometry(self.x, y, self.w, self.h)
         self.osd.loop_once()
@@ -87,7 +87,7 @@ class Aosd_text_scroll(object):
                     continue
                 if entry.time_show + self.entry_timeout > self.time_render:
                     continue
-            print "XXX Aosd_text_scroll._render_1_remove_old remove %s" % entry.text
+            #print "XXX Aosd_text_scroll._render_1_remove_old remove %s" % entry.text
             if entry == self.entries[-1]:
                 self.last_line = n
             self.entries.remove(entry)
@@ -106,7 +106,7 @@ class Aosd_text_scroll(object):
             n += 1
             if entry.state != Aosd_text_scroll_entry.STATE_SHOW:
                 continue
-            print "XXX Aosd_text_scroll._render_2_scroll_remaining scroll %s" % entry.text
+            #print "XXX Aosd_text_scroll._render_2_scroll_remaining scroll %s" % entry.text
             entry.move_to_line(n)
         self.last_line = n
         self.todo_scroll = 0
@@ -119,7 +119,7 @@ class Aosd_text_scroll(object):
             n += 1
             if entry.state != Aosd_text_scroll_entry.STATE_NEW:
                 continue
-            print "XXX Aosd_text_scroll._render_3_append_new append %s" % entry.text
+            #print "XXX Aosd_text_scroll._render_3_append_new append %s" % entry.text
             entry.move_to_line(self.last_line)
             self.last_line += 1
             entry.show()
