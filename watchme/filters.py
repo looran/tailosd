@@ -8,6 +8,11 @@ class Watchme_filter_default_syslog(object):
 
     def filter(self, evt):
         # Severity
+        # system
+        if "Kernel panic" in evt.content:
+            evt.severity = watchme.SEVERITY_HIGH
+        if "Hardware Error" in evt.content:
+            evt.severity = watchme.SEVERITY_HIGH
         if "[sudo]" in evt.content:
             if "session opened" in evt.content:
                 evt.severity = watchme.SEVERITY_MEDIUM
@@ -18,6 +23,20 @@ class Watchme_filter_default_syslog(object):
                 evt.severity = watchme.SEVERITY_LOW
         if "segfault" in evt.content:
             evt.severity = watchme.SEVERITY_HIGH
+        # devices
+        if "New USB device found" in evt.content:
+            evt.severity = watchme.SEVERITY_MEDIUM
+        if "USB disconnect" in evt.content:
+            evt.severity = watchme.SEVERITY_MEDIUM
+        # network
+        if "Malformed Packet" in evt.content:
+            evt.severity = watchme.SEVERITY_HIGH
+        if "adding default route" in evt.content:
+            evt.severity = watchme.SEVERITY_MEDIUM
+        if "authenticated" in evt.content:
+            evt.severity = watchme.SEVERITY_MEDIUM
+        if any(x in evt.content for x in ["authenticated", "associated", "carrier acquired", "deauthenticating from", "carrier lost"]):
+            evt.severity = watchme.SEVERITY_MEDIUM
         return evt
 
 class Watchme_filter_default_syslog_iptables(object):
