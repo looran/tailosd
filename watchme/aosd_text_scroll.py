@@ -50,7 +50,7 @@ class Aosd_text_scroll_entry(object):
         osd.wrap = aosd.PANGO_WRAP_WORD_CHAR
         osd.alignment = aosd.PANGO_ALIGN_LEFT
         osd.set_layout_width(osd.get_screen_wrap_width())
-        osd.set_text(self.text)
+        osd.set_text(unicode(self.text, 'UTF-8'))
         self.w, self.h = osd.get_text_size()
         (screen_w, screen_h) = osd.get_screen_size()
         self.x = screen_w - ((screen_w * self.use_screen_width_percent) / 100)
