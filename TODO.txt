@@ -1,0 +1,2 @@
+* better log filtering
+logstash ? http://logstash.net/
