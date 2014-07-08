@@ -23,6 +23,10 @@ class Watchme_filter_default_syslog(object):
                 evt.severity = watchme.SEVERITY_LOW
         if "segfault" in evt.content:
             evt.severity = watchme.SEVERITY_HIGH
+        if "Out of memory" in evt.content:
+            evt.severity = watchme.SEVERITY_HIGH
+        if "Killed process" in evt.content:
+            evt.severity = watchme.SEVERITY_HIGH
         # devices
         if "New USB device found" in evt.content:
             evt.severity = watchme.SEVERITY_MEDIUM
@@ -101,10 +105,12 @@ class Watchme_filter_default_arpwatch(object):
         # Severity
         if not "[arpwatch]" in evt.content:
             return evt # not for us
-
-        if any(x in evt.content for x in ["Wrote pid", "Running as", "listening on", "new station"]):
-            evt.severity = watchme.SEVERITY_LOW
+        if any(x in evt.content for x in ["Wrote pid", "Running as", "listening on"]):
+            return evt # not interesting
+        if "new station" in evt.content:
+            evt.severity = watchme.SEVERITY_MEDIUM
         else:
             evt.severity = watchme.SEVERITY_HIGH
+
         return evt
 
