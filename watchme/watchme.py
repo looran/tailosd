@@ -101,9 +101,13 @@ class Watchme_user(multiprocessing.Process):
     def _filter(self, evt):
         for f in self.filters:
             try:
-                evt = f.filter(evt)
-                if not evt:
-                    return None # drop event
+                severity = self._filter_severity(evt, f)
+                if severity is not None:
+                    evt.severity = severity
+                if 'filter' in dir(f):
+                    evt = f.filter(evt)
+                    if not evt:
+                        return None # drop event
             except Exception, e:
                 print e
                 self.logger.warn(traceback.print_exc())
@@ -112,6 +116,24 @@ class Watchme_user(multiprocessing.Process):
                 self._print(evt)
                 continue
         return evt
+
+    def _filter_severity(self, evt, filter_obj):
+        for severity_str in [ "SEVERITY_HIGH", "SEVERITY_MEDIUM", "SEVERITY_LOW", "SEVERITY_INFO" ]:
+            severity = globals()[severity_str]
+            if severity_str in dir(filter_obj):
+                for it in filter_obj.__getattribute__(severity_str):
+                    if type(it) is list:
+                        el1 = it[0]
+                        el2 = it[1]
+                        if type(el2) is list:
+                            if el1 in evt.content and any(x in evt.content for x in el2):
+                                return severity
+                        else:
+                            if el1 in evt.content and el2 in evt.content:
+                                return severity
+                    elif it in evt.content:
+                                return severity
+        return None
 
     def _print(self, evt):
         self._print_term(evt)

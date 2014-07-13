@@ -3,45 +3,26 @@ import re
 import watchme
 
 class Watchme_filter_default_syslog(object):
-    def __init__(self):
-        pass
-
-    def filter(self, evt):
-        # Severity
-        # system
-        if "Kernel panic" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        if "Hardware Error" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        if "[sudo]" in evt.content:
-            if "session opened" in evt.content:
-                evt.severity = watchme.SEVERITY_MEDIUM
-            elif ("incorrect password" in evt.content
-                    or "pam_unix(sudo:auth)" in evt.content):
-                evt.severity = watchme.SEVERITY_HIGH
-            else:
-                evt.severity = watchme.SEVERITY_LOW
-        if "segfault" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        if "Out of memory" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        if "Killed process" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        # devices
-        if "New USB device found" in evt.content:
-            evt.severity = watchme.SEVERITY_MEDIUM
-        if "USB disconnect" in evt.content:
-            evt.severity = watchme.SEVERITY_MEDIUM
-        # network
-        if "Malformed Packet" in evt.content:
-            evt.severity = watchme.SEVERITY_HIGH
-        if "adding default route" in evt.content:
-            evt.severity = watchme.SEVERITY_MEDIUM
-        if "authenticated" in evt.content:
-            evt.severity = watchme.SEVERITY_MEDIUM
-        if any(x in evt.content for x in ["authenticated", "associated", "carrier acquired", "deauthenticating from", "carrier lost"]):
-            evt.severity = watchme.SEVERITY_MEDIUM
-        return evt
+    SEVERITY_HIGH = [
+        ["[sudo]", ["incorrect password", "pam_unix(sudo:auth)"]],
+        "Kernel panic",
+        "Hardware Error",
+        "segfault",
+        "Out of memory",
+        "Killed process",
+        "Malformed Packet"
+    ]
+    SEVERITY_MEDIUM = [
+        ["[sudo]", "session opened"],
+        "New USB device found",
+        "USB disconnect",
+        "adding default route",
+        "authenticated",
+        "authenticated", "associated", "carrier acquired", "deauthenticating from", "carrier lost",
+    ]
+    SEVERITY_LOW = [
+        ["[sudo]", "session opened"],
+    ]
 
 class Watchme_filter_default_syslog_iptables(object):
     def __init__(self, debug=False):
@@ -105,9 +86,6 @@ class Watchme_filter_default_syslog_iptables(object):
         return evt
 
 class Watchme_filter_default_arpwatch(object):
-    def __init__(self):
-        pass
-
     def filter(self, evt):
         # Severity
         if not "[arpwatch]" in evt.content:
