@@ -1,2 +1,36 @@
 * better log filtering
 logstash ? http://logstash.net/
+
+=========================================================
+=========================================================
+BUGS
+=========================================================
+=========================================================
+
+=========================================================
+HIGH /var/log/everything/current [kernel] [11879.757642] dhcpcd[5375]: segfault at 348059b3a8 ip 000000000041e48f sp 00007fff93419bc0 error 7 in dhcpcd[400000+35000]
+FIXED dc8d46ac8f78e3d1c384c0ecd53f3d7ef3e788df
+
+Exception in thread Thread-1:
+Traceback (most recent call last):
+  File "/usr/lib64/python2.7/threading.py", line 810, in __bootstrap_inner
+    self.run()
+  File "/usr/lib64/python2.7/site-packages/watchme-0.1-py2.7.egg/watchme/aosd_text_scroll.py", line 144, in run
+    Aosd_text_scroll.append(self, to_append[0], to_append[1])
+  File "/usr/lib64/python2.7/site-packages/watchme-0.1-py2.7.egg/watchme/aosd_text_scroll.py", line 68, in append
+    entry = Aosd_text_scroll_entry(text, color, self.font_size, self.use_screen_width_percent)
+  File "/usr/lib64/python2.7/site-packages/watchme-0.1-py2.7.egg/watchme/aosd_text_scroll.py", line 21, in __init__
+    self._setup()
+  File "/usr/lib64/python2.7/site-packages/watchme-0.1-py2.7.egg/watchme/aosd_text_scroll.py", line 53, in _setup
+    osd.set_text(unicode(self.text, 'UTF-8'))
+  File "/usr/lib64/python2.7/encodings/utf_8.py", line 16, in decode
+    return codecs.utf_8_decode(input, errors, True)
+UnicodeDecodeError: 'utf8' codec can't decode byte 0x8d in position 10: invalid start byte
+
+^CTraceback (most recent call last):
+  File "/usr/bin/watchme", line 4, in <module>
+    __import__('pkg_resources').run_script('watchme==0.1', 'watchme')
+  File "/usr/lib64/python2.7/site-packages/pkg_resources.py", line 534, in run_script
+[INFO/Watchme_user-1] process shutting down
+[DEBUG/Watchme_user-1] running all "atexit" finalizers with priority >= 0
+
