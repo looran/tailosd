@@ -31,6 +31,7 @@ import traceback
 import imp
 import inspect
 import pwd
+import select
 
 import aosd_text_scroll
 import utils
@@ -196,9 +197,27 @@ class Watchme(object):
         self.logger.info("Watchme started")
         self.user_q.put_nowait(Watchme_event(SEVERITY_INFO, "Watchme", "Watchme started"))
 
-        for fn, line in multitail.multitail(['/var/log/everything/current']):
-            evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
-            #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
+        # for fn, line in multitail.multitail(['/var/log/everything/current']):
+        #     evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
+        #     #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
+        #     self.user_q.put_nowait(evt)
+
+        import systemd.journal
+        journal = systemd.journal.Reader()
+        journal.seek_tail()
+        journal.get_previous() # See https://bugs.freedesktop.org/show_bug.cgi?id=64614
+        poll = select.poll()
+        poll.register(journal.fileno(), journal.get_events())
+
+        while True:
+            poll.poll()
+            journal.process() # This is necessary to reset fd readable state
+            entry = journal.get_next()
+            evt = Watchme_event(
+                SEVERITY_UNINITIALIZED,
+                entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
+                entry['MESSAGE'].encode('ascii', 'ignore')
+            )
             self.user_q.put_nowait(evt)
 
         self.logger.info("Watchme exiting, waiting for user process for %d seconds" % EXIT_JOIN_WAIT)
