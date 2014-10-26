@@ -211,8 +211,10 @@ class Watchme(object):
 
         while True:
             poll.poll()
-            journal.process() # This is necessary to reset fd readable state
             entry = journal.get_next()
+            if not entry:
+                journal.process() # This is necessary to reset fd readable state
+                continue
             evt = Watchme_event(
                 SEVERITY_UNINITIALIZED,
                 entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
