@@ -215,12 +215,16 @@ class Watchme(object):
             if not entry:
                 journal.process() # This is necessary to reset fd readable state
                 continue
-            evt = Watchme_event(
-                SEVERITY_UNINITIALIZED,
-                entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
-                entry['MESSAGE'].encode('ascii', 'ignore')
-            )
-            self.user_q.put_nowait(evt)
+            try:
+                evt = Watchme_event(
+                    SEVERITY_UNINITIALIZED,
+                    entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
+                    entry['MESSAGE'].encode('ascii', 'ignore')
+                )
+                self.user_q.put_nowait(evt)
+            except Exception, e:
+                self.logger.warn(e)
+                self.logger.warn(traceback.print_exc())
 
         self.logger.info("Watchme exiting, waiting for user process for %d seconds" % EXIT_JOIN_WAIT)
         if self.user_p.is_alive():
