@@ -22,7 +22,6 @@
 import sys
 import os
 import aosd
-import multitail
 import logging
 import multiprocessing
 import setproctitle
@@ -173,7 +172,7 @@ class Watchme_user(multiprocessing.Process):
         pass
 
     def _init_osd(self):
-        self.osd = aosd_text_scroll.Aosd_text_scroll_thread(entry_timeout=6)
+        self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
 
 class Watchme(object):
@@ -192,14 +191,47 @@ class Watchme(object):
         self._user_process_init()
         self.logger.info("Watchme init ok")
 
-    def run(self):
-        self.logger.info("Watchme started")
-        self.user_q.put_nowait(Watchme_event(SEVERITY_INFO, "Watchme", "Watchme started"))
-
+    def _mode_multitail(self):
+        import multitail
         for fn, line in multitail.multitail(['/var/log/everything/current']):
             evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
             #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
             self.user_q.put_nowait(evt)
+
+    def _mode_systemd(self):
+        import select
+        import systemd.journal
+        journal = systemd.journal.Reader()
+        journal.seek_tail()
+        journal.get_previous() # See https://bugs.freedesktop.org/show_bug.cgi?id=64614
+        poll = select.poll()
+        poll.register(journal.fileno(), journal.get_events())
+
+        while True:
+            poll.poll()
+            entry = journal.get_next()
+            if not entry:
+                journal.process() # This is necessary to reset fd readable state
+                continue
+            try:
+                evt = Watchme_event(
+                    SEVERITY_UNINITIALIZED,
+                    entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
+                    entry['MESSAGE'].encode('ascii', 'ignore')
+                )
+                self.user_q.put_nowait(evt)
+            except Exception, e:
+                self.logger.warn(e)
+                self.logger.warn(traceback.print_exc())
+
+    def run(self, args):
+        self.logger.info("Watchme started")
+        self.user_q.put_nowait(Watchme_event(SEVERITY_INFO, "Watchme", "Watchme started"))
+
+        if args.systemd:
+            self._mode_systemd()
+        else:
+            self._mode_multitail()
 
         self.logger.info("Watchme exiting, waiting for user process for %d seconds" % EXIT_JOIN_WAIT)
         if self.user_p.is_alive():

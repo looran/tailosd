@@ -7,14 +7,27 @@ import thread
 
 import utils
 
+class Aosd_conf(object):
+    line_space = 4
+    top_space = 0
+    geom_x_offset = 10
+    geom_y_offset = 10
+    shadow_color = 'black'
+    shadow_opacity = 255
+    shadow_x_offset = 1
+    shadow_y_offset = 1
+    fore_opacity = 255
+    font = "DejaVu Sans Mono"
+    font_size = 10
+    use_screen_width_percent = 50
+    use_screen_heigh_percent = 45
+    entry_timeout = 6
+
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
     STATE_SHOW = 1
 
-    LINE_SPACE = 4
-    TOP_SPACE = 0
-
-    def __init__(self, text, color, font_size, use_screen_width_percent):
+    def __init__(self, text, color):
         utils.init_from_args(self)
         self.time_show = None
         self.line_num = None
@@ -22,14 +35,12 @@ class Aosd_text_scroll_entry(object):
         self.state = Aosd_text_scroll_entry.STATE_NEW
 
     def show(self):
-        #print "XXX Aosd_text_scroll_entry.show %s (w=%d, h=%d, color=%s)" % (self.text, self.w, self.h, self.color)
         self.time_show = time.time()
         self.osd.show()
         self.osd.loop_once()
 
     def move_to_line(self, line_num):
-        #print "XXX Aosd_text_scroll_entry.move_to_line %d" % line_num
-        y = Aosd_text_scroll_entry.TOP_SPACE + (line_num * (self.font_size + Aosd_text_scroll_entry.LINE_SPACE))
+        y = Aosd_conf.top_space + (line_num * (Aosd_conf.font_size + Aosd_conf.line_space))
         self.osd.set_geometry(self.x, y, self.w, self.h)
         self.osd.loop_once()
 
@@ -38,26 +49,26 @@ class Aosd_text_scroll_entry(object):
         osd.set_transparency(aosd.TRANSPARENCY_COMPOSITE)
         if osd.get_transparency() != aosd.TRANSPARENCY_COMPOSITE:
             osd.set_transparency(aosd.TRANSPARENCY_NONE)
-        osd.geom_x_offset = 10
-        osd.geom_y_offset = 10
-        osd.shadow_color = "black"
-        osd.shadow_opacity = 255
-        osd.shadow_x_offset = 1
-        osd.shadow_y_offset = 1
+        osd.geom_x_offset = Aosd_conf.geom_x_offset
+        osd.geom_y_offset = Aosd_conf.geom_y_offset
+        osd.shadow_color = Aosd_conf.shadow_color
+        osd.shadow_opacity = Aosd_conf.shadow_opacity
+        osd.shadow_x_offset = Aosd_conf.shadow_x_offset
+        osd.shadow_y_offset = Aosd_conf.shadow_y_offset
         osd.fore_color = self.color
-        osd.fore_opacity = 255
-        osd.set_font("Monospace Bold %d" % self.font_size)
+        osd.fore_opacity = Aosd_conf.fore_opacity
+        osd.set_font("%s %d" % (Aosd_conf.font, Aosd_conf.font_size))
         osd.wrap = aosd.PANGO_WRAP_WORD_CHAR
         osd.alignment = aosd.PANGO_ALIGN_LEFT
         osd.set_layout_width(osd.get_screen_wrap_width())
         osd.set_text(unicode(self.text, 'UTF-8', 'ignore'))
         self.w, self.h = osd.get_text_size()
         (screen_w, screen_h) = osd.get_screen_size()
-        self.x = screen_w - ((screen_w * self.use_screen_width_percent) / 100)
+        self.x = screen_w - ((screen_w * Aosd_conf.use_screen_width_percent) / 100)
         self.osd = osd
 
 class Aosd_text_scroll(object):
-    def __init__(self, font_size=10, entry_timeout=5, use_screen_heigh_percent=50, use_screen_width_percent=45):
+    def __init__(self):
         utils.init_from_args(self)
         self.osd = aosd.Aosd()
         self.entries = list()
@@ -65,13 +76,13 @@ class Aosd_text_scroll(object):
         self.todo_new = 0
     
     def append(self, text, color):
-        entry = Aosd_text_scroll_entry(text, color, self.font_size, self.use_screen_width_percent)
+        entry = Aosd_text_scroll_entry(text, color)
         self.entries.append(entry)
         self.todo_new += 1
 
     def render(self):
         (screen_w, screen_h) = self.osd.get_screen_size()
-        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (self.font_size + Aosd_text_scroll_entry.LINE_SPACE)
+        self.entries_max = ((screen_h * Aosd_conf.use_screen_heigh_percent) / 100) / (Aosd_conf.font_size + Aosd_conf.line_space)
         self.time_render = time.time()
         self._render_1_remove_old()
         self._render_2_scroll_remaining()
@@ -85,9 +96,8 @@ class Aosd_text_scroll(object):
             if len(self.entries) < self.entries_max:
                 if entry.state != Aosd_text_scroll_entry.STATE_SHOW:
                     continue
-                if entry.time_show + self.entry_timeout > self.time_render:
+                if entry.time_show + Aosd_conf.entry_timeout > self.time_render:
                     continue
-            #print "XXX Aosd_text_scroll._render_1_remove_old remove %s" % entry.text
             if entry == self.entries[-1]:
                 self.last_line = n
             self.entries.remove(entry)
@@ -106,7 +116,6 @@ class Aosd_text_scroll(object):
             n += 1
             if entry.state != Aosd_text_scroll_entry.STATE_SHOW:
                 continue
-            #print "XXX Aosd_text_scroll._render_2_scroll_remaining scroll %s" % entry.text
             entry.move_to_line(n)
         self.last_line = n
         self.todo_scroll = 0
@@ -119,7 +128,6 @@ class Aosd_text_scroll(object):
             n += 1
             if entry.state != Aosd_text_scroll_entry.STATE_NEW:
                 continue
-            #print "XXX Aosd_text_scroll._render_3_append_new append %s" % entry.text
             entry.move_to_line(self.last_line)
             self.last_line += 1
             entry.show()
