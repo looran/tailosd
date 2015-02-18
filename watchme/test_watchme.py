@@ -17,5 +17,6 @@ if __name__ == "__main__":
         help='Take logs from systemd (journald).'
     )
 
+    args = parser.parse_args()
     w = watchme.Watchme()
-    w.run(parser.parse_args())
+    w.run(args)
