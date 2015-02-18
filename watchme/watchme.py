@@ -30,7 +30,6 @@ import traceback
 import imp
 import inspect
 import pwd
-import select
 
 import aosd_text_scroll
 import utils
@@ -200,6 +199,7 @@ class Watchme(object):
             self.user_q.put_nowait(evt)
 
     def _mode_systemd(self):
+        import select
         import systemd.journal
         journal = systemd.journal.Reader()
         journal.seek_tail()
