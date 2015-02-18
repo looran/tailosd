@@ -19,12 +19,14 @@ class Aosd_conf(object):
     fore_opacity = 255
     font = "DejaVu Sans Mono"
     font_size = 10
+    use_screen_width_percent = 50
+    use_screen_heigh_percent = 45
 
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
     STATE_SHOW = 1
 
-    def __init__(self, text, color, use_screen_width_percent):
+    def __init__(self, text, color):
         utils.init_from_args(self)
         self.time_show = None
         self.line_num = None
@@ -61,11 +63,11 @@ class Aosd_text_scroll_entry(object):
         osd.set_text(unicode(self.text, 'UTF-8', 'ignore'))
         self.w, self.h = osd.get_text_size()
         (screen_w, screen_h) = osd.get_screen_size()
-        self.x = screen_w - ((screen_w * self.use_screen_width_percent) / 100)
+        self.x = screen_w - ((screen_w * Aosd_conf.use_screen_width_percent) / 100)
         self.osd = osd
 
 class Aosd_text_scroll(object):
-    def __init__(self, entry_timeout=5, use_screen_heigh_percent=50, use_screen_width_percent=45):
+    def __init__(self, entry_timeout=5):
         utils.init_from_args(self)
         self.osd = aosd.Aosd()
         self.entries = list()
@@ -73,13 +75,13 @@ class Aosd_text_scroll(object):
         self.todo_new = 0
     
     def append(self, text, color):
-        entry = Aosd_text_scroll_entry(text, color, self.use_screen_width_percent)
+        entry = Aosd_text_scroll_entry(text, color)
         self.entries.append(entry)
         self.todo_new += 1
 
     def render(self):
         (screen_w, screen_h) = self.osd.get_screen_size()
-        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (Aosd_conf.font_size + Aosd_conf.line_space)
+        self.entries_max = ((screen_h * Aosd_conf.use_screen_heigh_percent) / 100) / (Aosd_conf.font_size + Aosd_conf.line_space)
         self.time_render = time.time()
         self._render_1_remove_old()
         self._render_2_scroll_remaining()
