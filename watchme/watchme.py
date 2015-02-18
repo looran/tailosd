@@ -174,7 +174,7 @@ class Watchme_user(multiprocessing.Process):
         pass
 
     def _init_osd(self):
-        self.osd = aosd_text_scroll.Aosd_text_scroll_thread(entry_timeout=6)
+        self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
 
 class Watchme(object):

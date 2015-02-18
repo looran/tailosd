@@ -21,6 +21,7 @@ class Aosd_conf(object):
     font_size = 10
     use_screen_width_percent = 50
     use_screen_heigh_percent = 45
+    entry_timeout = 6
 
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
@@ -67,7 +68,7 @@ class Aosd_text_scroll_entry(object):
         self.osd = osd
 
 class Aosd_text_scroll(object):
-    def __init__(self, entry_timeout=5):
+    def __init__(self):
         utils.init_from_args(self)
         self.osd = aosd.Aosd()
         self.entries = list()
@@ -95,7 +96,7 @@ class Aosd_text_scroll(object):
             if len(self.entries) < self.entries_max:
                 if entry.state != Aosd_text_scroll_entry.STATE_SHOW:
                     continue
-                if entry.time_show + self.entry_timeout > self.time_render:
+                if entry.time_show + Aosd_conf.entry_timeout > self.time_render:
                     continue
             if entry == self.entries[-1]:
                 self.last_line = n
