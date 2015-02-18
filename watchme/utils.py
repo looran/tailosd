@@ -23,4 +23,3 @@ def init_from_args(obj, just_args=True):
     if ((not just_args)
         or key in code_obj.co_varnames[1:code_obj.co_argcount]):
       setattr(obj, key, value)
-

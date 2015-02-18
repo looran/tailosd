@@ -98,4 +98,3 @@ class Watchme_filter_default_arpwatch(object):
             evt.severity = watchme.SEVERITY_HIGH
 
         return evt
-

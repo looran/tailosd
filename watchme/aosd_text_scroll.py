@@ -74,7 +74,7 @@ class Aosd_text_scroll(object):
         self.entries = list()
         self.last_line = 0
         self.todo_new = 0
-    
+
     def append(self, text, color):
         entry = Aosd_text_scroll_entry(text, color)
         self.entries.append(entry)
