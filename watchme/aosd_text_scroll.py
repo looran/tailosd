@@ -22,6 +22,7 @@ class Aosd_conf(object):
     use_screen_width_percent = 50
     use_screen_heigh_percent = 45
     entry_timeout = 6
+    remove_keep_order = False
 
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
@@ -91,6 +92,7 @@ class Aosd_text_scroll(object):
     def _render_1_remove_old(self):
         self.todo_scroll = 0
         n = -1
+        to_remove = []
         for entry in self.entries:
             n += 1
             if len(self.entries) < self.entries_max:
@@ -100,9 +102,19 @@ class Aosd_text_scroll(object):
                     continue
             if entry == self.entries[-1]:
                 self.last_line = n
-            self.entries.remove(entry)
-            del entry
+            if Aosd_conf.remove_keep_order:
+                to_remove.append(entry)
+            else:
+                # Was originally a bug because removing items in a python list
+                #  while iterating over it skips the next item
+                # However this gives a nice visual effect because only half of
+                #  the lines disappear at each round
+                self.entries.remove(entry)
+                del entry
             self.todo_scroll += 1
+        for rem in to_remove:
+            self.entries.remove(rem)
+            del rem
 
     def _render_2_scroll_remaining(self):
         if self.last_line < self.entries_max:
