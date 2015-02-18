@@ -155,7 +155,7 @@ class Watchme_user(multiprocessing.Process):
             try:
                 m = imp.load_source("filters", p)
                 for name, class_ref in inspect.getmembers(m, inspect.isclass):
-                    if name[15:] not in self.conf.filters_enabled:
+                    if name[:15] not in self.conf.filters_enabled:
                         continue
                     try:
                         class_obj = class_ref()
@@ -244,7 +244,7 @@ class Watchme(object):
         self.logger.info("Watchme exiting ok")
 
     def _conf_init(self):
-        self.conf = Watchme_conf(filters_enabled=['default_syslog', 'default_syslog_iptables', 'default_arpwatch'])
+        self.conf = Watchme_conf(filters_enabled=['Watchme_filter_'])
 
     def _logger_init(self):
         self.logger = multiprocessing.log_to_stderr() # XXX implement process-safe logger
