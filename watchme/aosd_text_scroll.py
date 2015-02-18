@@ -18,12 +18,13 @@ class Aosd_conf(object):
     shadow_y_offset = 1
     fore_opacity = 255
     font = "DejaVu Sans Mono"
+    font_size = 10
 
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
     STATE_SHOW = 1
 
-    def __init__(self, text, color, font_size, use_screen_width_percent):
+    def __init__(self, text, color, use_screen_width_percent):
         utils.init_from_args(self)
         self.time_show = None
         self.line_num = None
@@ -36,7 +37,7 @@ class Aosd_text_scroll_entry(object):
         self.osd.loop_once()
 
     def move_to_line(self, line_num):
-        y = Aosd_conf.top_space + (line_num * (self.font_size + Aosd_conf.line_space))
+        y = Aosd_conf.top_space + (line_num * (Aosd_conf.font_size + Aosd_conf.line_space))
         self.osd.set_geometry(self.x, y, self.w, self.h)
         self.osd.loop_once()
 
@@ -53,7 +54,7 @@ class Aosd_text_scroll_entry(object):
         osd.shadow_y_offset = Aosd_conf.shadow_y_offset
         osd.fore_color = self.color
         osd.fore_opacity = Aosd_conf.fore_opacity
-        osd.set_font("%s %d" % (Aosd_conf.font, self.font_size))
+        osd.set_font("%s %d" % (Aosd_conf.font, Aosd_conf.font_size))
         osd.wrap = aosd.PANGO_WRAP_WORD_CHAR
         osd.alignment = aosd.PANGO_ALIGN_LEFT
         osd.set_layout_width(osd.get_screen_wrap_width())
@@ -64,7 +65,7 @@ class Aosd_text_scroll_entry(object):
         self.osd = osd
 
 class Aosd_text_scroll(object):
-    def __init__(self, font_size=10, entry_timeout=5, use_screen_heigh_percent=50, use_screen_width_percent=45):
+    def __init__(self, entry_timeout=5, use_screen_heigh_percent=50, use_screen_width_percent=45):
         utils.init_from_args(self)
         self.osd = aosd.Aosd()
         self.entries = list()
@@ -72,13 +73,13 @@ class Aosd_text_scroll(object):
         self.todo_new = 0
     
     def append(self, text, color):
-        entry = Aosd_text_scroll_entry(text, color, self.font_size, self.use_screen_width_percent)
+        entry = Aosd_text_scroll_entry(text, color, self.use_screen_width_percent)
         self.entries.append(entry)
         self.todo_new += 1
 
     def render(self):
         (screen_w, screen_h) = self.osd.get_screen_size()
-        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (self.font_size + Aosd_conf.line_space)
+        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (Aosd_conf.font_size + Aosd_conf.line_space)
         self.time_render = time.time()
         self._render_1_remove_old()
         self._render_2_scroll_remaining()
