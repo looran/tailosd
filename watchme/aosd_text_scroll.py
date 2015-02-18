@@ -7,12 +7,21 @@ import thread
 
 import utils
 
+class Aosd_conf(object):
+    line_space = 3
+    top_space = 18
+    geom_x_offset = 0
+    geom_y_offset = 0
+    shadow_color = 'black'
+    shadow_opacity = 0
+    shadow_x_offset = 1
+    shadow_y_offset = 1
+    fore_opacity = 192
+    font = "DejaVu Sans Mono"
+
 class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
     STATE_SHOW = 1
-
-    LINE_SPACE = 4
-    TOP_SPACE = 0
 
     def __init__(self, text, color, font_size, use_screen_width_percent):
         utils.init_from_args(self)
@@ -29,7 +38,7 @@ class Aosd_text_scroll_entry(object):
 
     def move_to_line(self, line_num):
         #print "XXX Aosd_text_scroll_entry.move_to_line %d" % line_num
-        y = Aosd_text_scroll_entry.TOP_SPACE + (line_num * (self.font_size + Aosd_text_scroll_entry.LINE_SPACE))
+        y = Aosd_conf.top_space + (line_num * (self.font_size + Aosd_conf.line_space))
         self.osd.set_geometry(self.x, y, self.w, self.h)
         self.osd.loop_once()
 
@@ -38,15 +47,15 @@ class Aosd_text_scroll_entry(object):
         osd.set_transparency(aosd.TRANSPARENCY_COMPOSITE)
         if osd.get_transparency() != aosd.TRANSPARENCY_COMPOSITE:
             osd.set_transparency(aosd.TRANSPARENCY_NONE)
-        osd.geom_x_offset = 10
-        osd.geom_y_offset = 10
-        osd.shadow_color = "black"
-        osd.shadow_opacity = 255
-        osd.shadow_x_offset = 1
-        osd.shadow_y_offset = 1
+        osd.geom_x_offset = Aosd_conf.geom_x_offset
+        osd.geom_y_offset = Aosd_conf.geom_y_offset
+        osd.shadow_color = Aosd_conf.shadow_color
+        osd.shadow_opacity = Aosd_conf.shadow_opacity
+        osd.shadow_x_offset = Aosd_conf.shadow_x_offset
+        osd.shadow_y_offset = Aosd_conf.shadow_y_offset
         osd.fore_color = self.color
-        osd.fore_opacity = 255
-        osd.set_font("Monospace Bold %d" % self.font_size)
+        osd.fore_opacity = Aosd_conf.fore_opacity
+        osd.set_font("%s %d" % (Aosd_conf.font, self.font_size))
         osd.wrap = aosd.PANGO_WRAP_WORD_CHAR
         osd.alignment = aosd.PANGO_ALIGN_LEFT
         osd.set_layout_width(osd.get_screen_wrap_width())
@@ -71,7 +80,7 @@ class Aosd_text_scroll(object):
 
     def render(self):
         (screen_w, screen_h) = self.osd.get_screen_size()
-        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (self.font_size + Aosd_text_scroll_entry.LINE_SPACE)
+        self.entries_max = ((screen_h * self.use_screen_heigh_percent) / 100) / (self.font_size + Aosd_conf.line_space)
         self.time_render = time.time()
         self._render_1_remove_old()
         self._render_2_scroll_remaining()
