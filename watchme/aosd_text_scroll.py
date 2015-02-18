@@ -8,15 +8,15 @@ import thread
 import utils
 
 class Aosd_conf(object):
-    line_space = 3
-    top_space = 18
-    geom_x_offset = 0
-    geom_y_offset = 0
+    line_space = 4
+    top_space = 0
+    geom_x_offset = 10
+    geom_y_offset = 10
     shadow_color = 'black'
-    shadow_opacity = 0
+    shadow_opacity = 255
     shadow_x_offset = 1
     shadow_y_offset = 1
-    fore_opacity = 192
+    fore_opacity = 255
     font = "DejaVu Sans Mono"
 
 class Aosd_text_scroll_entry(object):
