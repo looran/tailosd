@@ -22,7 +22,6 @@
 import sys
 import os
 import aosd
-import multitail
 import logging
 import multiprocessing
 import setproctitle
@@ -193,15 +192,14 @@ class Watchme(object):
         self._user_process_init()
         self.logger.info("Watchme init ok")
 
-    def run(self):
-        self.logger.info("Watchme started")
-        self.user_q.put_nowait(Watchme_event(SEVERITY_INFO, "Watchme", "Watchme started"))
+    def _mode_multitail(self):
+        import multitail
+        for fn, line in multitail.multitail(['/var/log/everything/current']):
+            evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
+            #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
+            self.user_q.put_nowait(evt)
 
-        # for fn, line in multitail.multitail(['/var/log/everything/current']):
-        #     evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
-        #     #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
-        #     self.user_q.put_nowait(evt)
-
+    def _mode_systemd(self):
         import systemd.journal
         journal = systemd.journal.Reader()
         journal.seek_tail()
@@ -225,6 +223,15 @@ class Watchme(object):
             except Exception, e:
                 self.logger.warn(e)
                 self.logger.warn(traceback.print_exc())
+
+    def run(self, args):
+        self.logger.info("Watchme started")
+        self.user_q.put_nowait(Watchme_event(SEVERITY_INFO, "Watchme", "Watchme started"))
+
+        if args.systemd:
+            self._mode_systemd()
+        else:
+            self._mode_multitail()
 
         self.logger.info("Watchme exiting, waiting for user process for %d seconds" % EXIT_JOIN_WAIT)
         if self.user_p.is_alive():
