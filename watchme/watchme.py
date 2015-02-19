@@ -13,6 +13,12 @@
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # TODO
+# * move user configuration (colors, fonts, ...) to ~/.config/watchme/conf
+# * click on text makes text disappear
+# * longer timeout for higher severity
+# * number of critical events displayed in system tray (timeout 5 min)
+
+# OLD TODO
 # * linewrap: display multiline entries
 # * main process multitail: open (r) file then droppriv
 # * ability to start as normal user, and not droppriv
