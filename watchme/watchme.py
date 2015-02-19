@@ -59,7 +59,7 @@ EXIT_JOIN_WAIT = 2
 class Watchme_event(object):
     """ Event object, exchanged between processes
     For example, can be a new line in a monitored file """
-    def __init__(self, severity, source, content):
+    def __init__(self, severity, source, content, sysd_dct=None):
         utils.init_from_args(self)
         self.evt_id = time.time()
 
@@ -217,7 +217,8 @@ class Watchme(object):
                 evt = Watchme_event(
                     SEVERITY_UNINITIALIZED,
                     entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'),
-                    entry['MESSAGE'].encode('ascii', 'ignore')
+                    entry['MESSAGE'].encode('ascii', 'ignore'),
+                    sysd_dct=entry
                 )
                 self.user_q.put_nowait(evt)
             except Exception, e:

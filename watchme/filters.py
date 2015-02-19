@@ -98,3 +98,26 @@ class Watchme_filter_default_arpwatch(object):
             evt.severity = watchme.SEVERITY_HIGH
 
         return evt
+
+class Watchme_filter_default_systemd(object):
+    def filter(self, evt):
+        if not evt.sysd_dct:
+            return evt # not for us
+
+        # By default use PRIORITY field from systemd to set OSD severity color
+        if 'PRIORITY' in evt.sysd_dct:
+            if evt.sysd_dct['PRIORITY'] < 4:
+                evt.severity = watchme.SEVERITY_HIGH
+            elif evt.sysd_dct['PRIORITY'] < 5:
+                evt.severity = watchme.SEVERITY_MEDIUM
+            elif evt.sysd_dct['PRIORITY'] < 6:
+                evt.severity = watchme.SEVERITY_LOW
+            else:
+                evt.severity = watchme.SEVERITY_INFO
+
+        # Some services have dedicated priorities
+        if '_SYSTEMD_UNIT' in evt.sysd_dct:
+            if 'dhcpcd@' in evt.sysd_dct['_SYSTEMD_UNIT']:
+                evt.severity = watchme.SEVERITY_MEDIUM
+
+        return evt
