@@ -161,11 +161,11 @@ class Aosd_text_scroll_thread(Aosd_text_scroll, threading.Thread):
             else:
                 if to_append[0] == "exit":
                     thread.exit()
-                Aosd_text_scroll.append(self, to_append[0], to_append[1], to_append[2])
+                Aosd_text_scroll.append(self, *to_append)
             Aosd_text_scroll.render(self)
 
     def append(self, text, color, timeout=Aosd_conf.entry_timeout): # Aosd_text_scroll
-        to_append = [text, color, timeout]
+        to_append = (text, color, timeout)
         self.queue.put_nowait(to_append)
 
     def render(self): # Aosd_text_scroll
