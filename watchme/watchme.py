@@ -59,6 +59,13 @@ SEVERITY_COLORS = {
     SEVERITY_MEDIUM: "orange",
     SEVERITY_HIGH:   "red",
 }
+SEVERITY_TIMEOUT = {
+    SEVERITY_UNINITIALIZED: 6,
+    SEVERITY_INFO:   6,
+    SEVERITY_LOW:    7,
+    SEVERITY_MEDIUM: 9,
+    SEVERITY_HIGH:   12,
+}
 
 EXIT_JOIN_WAIT = 2
 
@@ -152,7 +159,8 @@ class Watchme_user(multiprocessing.Process):
     def _print_osd(self, evt):
         txt = "%s" % (evt.content)
         color = SEVERITY_COLORS[evt.severity]
-        self.osd.append(txt, color)
+        timeout = SEVERITY_TIMEOUT[evt.severity]
+        self.osd.append(txt, color, timeout=timeout)
 
     def _init_filters(self):
         self.filters = list()

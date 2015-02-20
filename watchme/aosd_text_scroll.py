@@ -28,7 +28,7 @@ class Aosd_text_scroll_entry(object):
     STATE_NEW = 0
     STATE_SHOW = 1
 
-    def __init__(self, text, color):
+    def __init__(self, text, color, timeout=Aosd_conf.entry_timeout):
         utils.init_from_args(self)
         self.time_show = None
         self.line_num = None
@@ -76,8 +76,8 @@ class Aosd_text_scroll(object):
         self.last_line = 0
         self.todo_new = 0
 
-    def append(self, text, color):
-        entry = Aosd_text_scroll_entry(text, color)
+    def append(self, text, color, timeout=Aosd_conf.entry_timeout):
+        entry = Aosd_text_scroll_entry(text, color, timeout)
         self.entries.append(entry)
         self.todo_new += 1
 
@@ -98,7 +98,7 @@ class Aosd_text_scroll(object):
             if len(self.entries) < self.entries_max:
                 if entry.state != Aosd_text_scroll_entry.STATE_SHOW:
                     continue
-                if entry.time_show + Aosd_conf.entry_timeout > self.time_render:
+                if entry.time_show + entry.timeout > self.time_render:
                     continue
             if entry == self.entries[-1]:
                 self.last_line = n
@@ -161,11 +161,11 @@ class Aosd_text_scroll_thread(Aosd_text_scroll, threading.Thread):
             else:
                 if to_append[0] == "exit":
                     thread.exit()
-                Aosd_text_scroll.append(self, to_append[0], to_append[1])
+                Aosd_text_scroll.append(self, to_append[0], to_append[1], to_append[2])
             Aosd_text_scroll.render(self)
 
-    def append(self, text, color): # Aosd_text_scroll
-        to_append = [text, color]
+    def append(self, text, color, timeout=Aosd_conf.entry_timeout): # Aosd_text_scroll
+        to_append = [text, color, timeout]
         self.queue.put_nowait(to_append)
 
     def render(self): # Aosd_text_scroll
