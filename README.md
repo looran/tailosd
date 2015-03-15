@@ -1,7 +1,7 @@
 watchme
 =======
 
-Displays system logs on screen using OSD
+Displays system logs on screen in real-time using OSD
 
 ### Usage
 
@@ -14,9 +14,3 @@ sudo watchme
 ```bash
 sudo python setup.py install
 ```
-
-### Demo
-
-Little video:
-
-http://gouloum.fr/x/20140623_162112_watchme_demo_1.ogv
