@@ -8,6 +8,7 @@ class Watchme_filter_default_syslog(object):
         "Kernel panic",
         "Hardware Error",
         "segfault",
+        "grsec",
         "Out of memory",
         "Killed process",
         "Malformed Packet"
