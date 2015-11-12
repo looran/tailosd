@@ -149,7 +149,7 @@ class Watchme_user(multiprocessing.Process):
 
     def _print(self, evt):
         self._print_term(evt)
-        if evt.severity == SEVERITY_LOW and os.environ.get('WATCHME_CONF_NOPRINTOSD_SEVERITY_LOW'):
+        if evt.severity == SEVERITY_LOW and os.environ.get('WATCHME_NOLOW'):
             return
         self._print_osd(evt)
 
