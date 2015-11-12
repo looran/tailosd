@@ -1,7 +1,7 @@
 watchme
 =======
 
-Displays system logs on screen using OSD
+Displays system logs on screen in real-time using OSD
 
 ### Usage
 
@@ -14,7 +14,6 @@ sudo watchme
 ```bash
 sudo python setup.py install
 ```
-
 #### Dependencies
 
 * libaosd
