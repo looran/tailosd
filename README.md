@@ -15,6 +15,13 @@ sudo watchme
 sudo python setup.py install
 ```
 
+#### Dependencies
+
+* libaosd
+* python-aosd
+* python-setproctitle
+* python-multitail
+
 ### Demo
 
 Little video:
