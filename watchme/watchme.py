@@ -207,7 +207,7 @@ class Watchme(object):
 
     def _mode_multitail(self):
         import multitail
-        for fn, line in multitail.multitail(['/var/log/everything/current']):
+        for fn, line in multitail.multitail(['/var/log/messages']):
             evt = Watchme_event(SEVERITY_UNINITIALIZED, fn, line[16:])
             #self.logger.info("EVENT : %s %s %s" % (evt.severity, evt.source, evt.content))
             self.user_q.put_nowait(evt)
