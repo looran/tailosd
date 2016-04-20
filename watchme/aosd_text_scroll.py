@@ -48,8 +48,6 @@ class Aosd_text_scroll_entry(object):
     def _setup(self):
         osd = aosd.AosdText()
         osd.set_transparency(aosd.TRANSPARENCY_COMPOSITE)
-        if osd.get_transparency() != aosd.TRANSPARENCY_COMPOSITE:
-            osd.set_transparency(aosd.TRANSPARENCY_NONE)
         osd.geom_x_offset = Aosd_conf.geom_x_offset
         osd.geom_y_offset = Aosd_conf.geom_y_offset
         osd.shadow_color = Aosd_conf.shadow_color
