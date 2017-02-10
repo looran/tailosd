@@ -11,4 +11,4 @@ install:
 clean:
 	python setup.py clean
 	rm -rf build dist tailosd.egg-info
-	rm *.pyc
+	rm -f *.pyc
