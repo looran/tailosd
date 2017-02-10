@@ -127,14 +127,6 @@ class Tailosd(object):
                 print(e)
                 print(traceback.print_exc())
 
-    def _print(self, severity, msg):
-        print "%s%s" % (SEVERITY[severity], msg)
-        if severity < self.loglevel:
-            return
-        color = SEVERITY_COLORS[severity]
-        timeout = SEVERITY_TIMEOUT[severity]
-        self.osd.append(msg, color, timeout=timeout)
-
     def _filter(self, source, message):
         severity = SEVERITY_UNINITIALIZED
 	for f in self.filters:
@@ -145,6 +137,14 @@ class Tailosd(object):
 		    if f[FILTER_OPT] in message:
 			severity = SEVERITY_CHOICES[f[FILTER_ACTION]]
         return severity, message
+
+    def _print(self, severity, msg):
+        print "%s%s" % (SEVERITY[severity], msg)
+        if severity < self.loglevel:
+            return
+        color = SEVERITY_COLORS[severity]
+        timeout = SEVERITY_TIMEOUT[severity]
+        self.osd.append(msg, color, timeout=timeout)
 
     def _NOTUSED_led_blink(self):
         with open("/sys/devices/platform/thinkpad_acpi/leds/tpacpi::power/brightness", 'w') as f: f.write("0")
