@@ -1,12 +1,13 @@
 from setuptools import setup
 
-setup(name='watchme',
+setup(name='tailosd',
       version='0.1',
-      description='Display system notifications on your desktop',
-      url='http://github.com/looran/watchme',
+      description='Linux On Screen Display file tail',
+      url='http://github.com/looran/tailosd',
       author='Laurent Ghigonis',
       author_email='laurent@gouloum.fr',
       license='BSD',
-      packages=['watchme'],
-      scripts=['bin/watchme'],
+      package_dir={'tailosd': ''},
+      packages=['tailosd'],
+      scripts=['tailosd'],
       zip_safe=False)

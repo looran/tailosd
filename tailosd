@@ -1,0 +1,61 @@
+#!/usr/bin/env python
+
+
+import os
+import sys
+import argparse
+import signal
+
+import tailosd
+
+_w = None
+
+def _sigint(signal, frame):
+    print('ctrl-c, exiting')
+    sys.exit(0)
+
+def _sighup(signal, frame):
+    print('sighup, reloading filters')
+    _w.reload_filters()
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='OSD file tailer')
+    parser.add_argument('-f', dest='filters',
+                        help='Filtering rules file')
+    parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
+                        help='Log level [default=%s]' % tailosd.SEVERITY_DEFAULT)
+    parser.add_argument('target', nargs='+',
+                        help='File paths to monitor | \'systemd\'')
+    args = parser.parse_args()
+    target = dict()
+    for t in args.target:
+        if t == "systemd":
+            if "files" in target:
+                parser.error("Cannot use 'systemd' together with files")
+            target["systemd"] = True
+        else:
+            if "systemd" in target:
+                parser.error("Cannot use files together with systemd")
+            if not os.path.isfile(t):
+                parser.error("File does not exist : %s" % t)
+            if not os.access(t, os.R_OK):
+                parser.error("File not readable : %s" % t)
+            if "files" not in target:
+                target["files"] = list()
+            target["files"].append(t)
+    if args.loglevel:
+        loglevel = args.loglevel
+    elif 'TAILOSD_LOGLEVEL' in os.environ:
+        loglev = os.environ.get('TAILOSD_LOGLEVEL')
+    else:
+        loglevel = tailosd.SEVERITY_DEFAULT
+    if loglevel not in tailosd.SEVERITY_CHOICES:
+        parser.error("Invalid log level %s, valid choices are : %s" % (loglevel, tailosd.SEVERITY_CHOICES))
+    loglevel = tailosd.SEVERITY_CHOICES[loglevel]
+
+    signal.signal(signal.SIGINT, _sigint)
+    signal.signal(signal.SIGHUP, _sighup)
+
+    _w = tailosd.Tailosd(target, args.filters, args.loglevel)
+    _w.run()

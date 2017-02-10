@@ -1,18 +1,27 @@
-watchme
+tailosd
 =======
 
-Displays system logs on screen in real-time using OSD
+Linux On Screen Display file tailer.
 
 ### Usage
 
+Tail system logs file and display updates on the screen using OSD:
 ```bash
-sudo watchme
+$ tailosd /var/log/syslog
+
+or with systemd:
+$ sudo tailosd systemd
+```
+
+Reload filters by sending SIGHUP to the tailosd process:
+```bash
+$ kill -HUP $(pgrep -lf tailosd |grep python |cut -d' ' -f1)
 ```
 
 ### Install
 
 ```bash
-sudo python setup.py install
+$ sudo python setup.py install
 ```
 #### Dependencies
 
@@ -21,8 +30,3 @@ sudo python setup.py install
 * python-setproctitle
 * python-multitail
 
-### Demo
-
-Little video:
-
-http://gouloum.fr/x/20140623_162112_watchme_demo_1.ogv

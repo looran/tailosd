@@ -1,4 +1,7 @@
 import time
+import sys
+
+sys.path.append("../")
 import aosd_text_scroll
 
 def test_no_scroll(osd):

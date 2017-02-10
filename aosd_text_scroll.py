@@ -5,8 +5,6 @@ import Queue
 import time
 import thread
 
-import utils
-
 class Aosd_conf(object):
     line_space = 4
     top_space = 0
@@ -29,7 +27,9 @@ class Aosd_text_scroll_entry(object):
     STATE_SHOW = 1
 
     def __init__(self, text, color, timeout=Aosd_conf.entry_timeout):
-        utils.init_from_args(self)
+        self.text = text
+        self.color = color
+        self.timeout = timeout
         self.time_show = None
         self.line_num = None
         self._setup()
@@ -43,11 +43,17 @@ class Aosd_text_scroll_entry(object):
     def move_to_line(self, line_num):
         y = Aosd_conf.top_space + (line_num * (Aosd_conf.font_size + Aosd_conf.line_space))
         self.osd.set_geometry(self.x, y, self.w, self.h)
-        self.osd.loop_once()
 
     def _setup(self):
+        # NOTE _mouse_cb: does not work, on hide() the current entry gets hidden but other entries are then stuck, shown forever.
+        # NOTE so we use osd.set_hide_upon_mouse_event() instead. but _mouse_cb() could be more configurable.
+        #def _mouse_cb(event, osd):
+        #    print("XXX _cb mouse")
+        #    osd.hide()
         osd = aosd.AosdText()
         osd.set_transparency(aosd.TRANSPARENCY_COMPOSITE)
+        osd.set_hide_upon_mouse_event(True)
+        #osd.set_mouse_event_callback(_mouse_cb, osd)
         osd.geom_x_offset = Aosd_conf.geom_x_offset
         osd.geom_y_offset = Aosd_conf.geom_y_offset
         osd.shadow_color = Aosd_conf.shadow_color
@@ -68,7 +74,6 @@ class Aosd_text_scroll_entry(object):
 
 class Aosd_text_scroll(object):
     def __init__(self):
-        utils.init_from_args(self)
         self.osd = aosd.Aosd()
         self.entries = list()
         self.last_line = 0
@@ -86,6 +91,9 @@ class Aosd_text_scroll(object):
         self._render_1_remove_old()
         self._render_2_scroll_remaining()
         self._render_3_append_new()
+        for entry in self.entries:
+            if entry.osd.is_shown():
+                entry.osd.loop_once()
 
     def _render_1_remove_old(self):
         self.todo_scroll = 0
@@ -111,6 +119,8 @@ class Aosd_text_scroll(object):
                 del entry
             self.todo_scroll += 1
         for rem in to_remove:
+            #rem.osd.hide()
+            del rem.osd
             self.entries.remove(rem)
             del rem
 
@@ -148,6 +158,7 @@ class Aosd_text_scroll_thread(Aosd_text_scroll, threading.Thread):
     def __init__(self, **kwargs):
         Aosd_text_scroll.__init__(self, **kwargs)
         threading.Thread.__init__(self)
+        self.daemon = True
         self.queue = Queue.Queue()
 
     def run(self): # Thread
