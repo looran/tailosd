@@ -43,7 +43,7 @@ SEVERITY_LOW = 1
 SEVERITY_MEDIUM = 2
 SEVERITY_HIGH = 3
 SEVERITY = {
-    SEVERITY_UNINITIALIZED: "",
+    SEVERITY_UNINITIALIZED: "---- ",
     SEVERITY_INFO:   "INFO ",
     SEVERITY_LOW:    "LOW  ",
     SEVERITY_MEDIUM: "MED  ",
@@ -139,7 +139,8 @@ class Tailosd(object):
         return severity, message
 
     def _print(self, severity, msg):
-        print "%s%s" % (SEVERITY[severity], msg)
+        d = time.strftime("%Y%m%d_%H%M")
+        print "%s %s%s" % (d, SEVERITY[severity], msg)
         if severity < self.loglevel:
             return
         color = SEVERITY_COLORS[severity]
