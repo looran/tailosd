@@ -5,13 +5,17 @@ import os
 import sys
 import argparse
 import signal
+import getpass
 
 import tailosd
 
 _w = None
+USER = getpass.getuser()
+PIDFILE = "/var/run/tailosd_%s.pid" % USER
 
 def _sigint(signal, frame):
     print('ctrl-c, exiting')
+    os.remove(PIDFILE)
     sys.exit(0)
 
 def _sighup(signal, frame):
@@ -19,15 +23,25 @@ def _sighup(signal, frame):
     _w.reload_filters()
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(description='OSD file tailer')
     parser.add_argument('-f', dest='filters',
                         help='Filtering rules file')
+    parser.add_argument('-r', dest='reload', action='store_true',
+                        help='Trigger reload of filter rules in running instance')
     parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
                         help='Log level [default=%s]' % tailosd.SEVERITY_DEFAULT)
-    parser.add_argument('target', nargs='+',
+    parser.add_argument('target', nargs='*',
                         help='File paths to monitor | \'systemd\'')
     args = parser.parse_args()
+
+    if args.reload:
+        if not os.path.exists(PIDFILE):
+            parser.error("PID file does not exist, is tailosd running under same user \"%s\" ? (%s)" % (USER, PIDFILE))
+        with open(PIDFILE) as f:
+            os.kill(int(f.read()), signal.SIGHUP)
+        print("signal sent to running tailosd")
+        sys.exit(0)
+
     target = dict()
     for t in args.target:
         if t == "systemd":
@@ -54,6 +68,8 @@ if __name__ == "__main__":
         parser.error("Invalid log level %s, valid choices are : %s" % (loglevel, tailosd.SEVERITY_CHOICES))
     loglevel = tailosd.SEVERITY_CHOICES[loglevel]
 
+    with open(PIDFILE, 'w') as f:
+        f.write('%d' % os.getpid())
     signal.signal(signal.SIGINT, _sigint)
     signal.signal(signal.SIGHUP, _sighup)
 

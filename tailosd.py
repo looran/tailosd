@@ -139,16 +139,10 @@ class Tailosd(object):
         return severity, message
 
     def _print(self, severity, msg):
-        d = time.strftime("%Y%m%d_%H%M")
-        print "%s %s%s" % (d, SEVERITY[severity], msg)
+        print "%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY[severity], msg)
         if severity < self.loglevel:
             return
         color = SEVERITY_COLORS[severity]
         timeout = SEVERITY_TIMEOUT[severity]
         self.osd.append(msg, color, timeout=timeout)
-
-    def _NOTUSED_led_blink(self):
-        with open("/sys/devices/platform/thinkpad_acpi/leds/tpacpi::power/brightness", 'w') as f: f.write("0")
-        time.sleep(0.1)
-        with open("/sys/devices/platform/thinkpad_acpi/leds/tpacpi::power/brightness", 'w') as f: f.write("1")
 
