@@ -19,6 +19,7 @@ medium "*" "associated"
 medium "*" "carrier acquired"
 medium "*" "deauthenticating from"
 medium "*" "carrier lost"
+medium "*" "iptables"
 
 low "*" "session opened"
 
