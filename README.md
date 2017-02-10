@@ -26,11 +26,11 @@ Tail system logs file on your screen using OSD:
 $ tailosd -f filters_example.txt /var/log/syslog
 
 or with systemd:
-$ sudo tailosd -f filters.txt systemd
+$ sudo tailosd -f filters_example.txt systemd
 ```
 See [filters_example.txt](filters_example.txt) for filters rules examples.
 
-Reload filters by sending SIGHUP to the tailosd process:
+Reload filters file by sending SIGHUP to the tailosd process:
 ```bash
 $ kill -HUP $(pgrep -lf tailosd |grep python |cut -d' ' -f1)
 ```
@@ -45,6 +45,7 @@ $ tailosd file.log
 ```bash
 $ sudo python setup.py install
 ```
+
 #### Dependencies
 
 * libaosd
