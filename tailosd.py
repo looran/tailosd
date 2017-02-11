@@ -129,13 +129,13 @@ class Tailosd(object):
                 journal.process() # This is necessary to reset fd readable state
                 continue
             try:
-                severity, msg = self._filter(entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'), entry['MESSAGE'].encode('ascii', 'ignore'))
+                severity, msg = self._filter(entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'), entry['MESSAGE'].encode('ascii', 'ignore'), entry)
                 self._print(severity, msg)
             except Exception, e:
                 print(e)
                 print(traceback.print_exc())
 
-    def _filter(self, source, message):
+    def _filter(self, source, message, data=None):
         severity = SEVERITY_UNKNOWN
         if source not in self.conf:
             source = "*"
@@ -148,7 +148,31 @@ class Tailosd(object):
                         severity = SEVERITY_DROP
                     elif f[CONF_ACTION] in SEVERITY_CHOICES:
                         severity = SEVERITY_CHOICES[f[CONF_ACTION]]
+        if severity == SEVERITY_UNKNOWN and source == "systemd" and data is not None:
+            self._filter_systemd(source, message, data)
         return severity, message
+
+    def _filter_systemd(self, source, message, sysd_dct):
+	import warnings
+	warnings.warn("XXX systemd ported from watchme without testing, needs testing !!!")
+	warnings.warn("XXX the best would probably be some configuration file syntax for systemd instead of this code.")
+        if not evt.sysd_dct:
+            return evt # not for us
+        # By default use PRIORITY field from systemd to set OSD severity color
+        if 'PRIORITY' in sysd_dct:
+            if sysd_dct['PRIORITY'] < 4:
+                severity = SEVERITY_HIGH
+            elif sysd_dct['PRIORITY'] < 5:
+                severity = SEVERITY_MEDIUM
+            elif sysd_dct['PRIORITY'] < 6:
+                severity = SEVERITY_LOW
+            else:
+                severity = SEVERITY_INFO
+        # Some services have dedicated priorities
+        if '_SYSTEMD_UNIT' in sysd_dct:
+            if 'dhcpcd@' in sysd_dct['_SYSTEMD_UNIT']:
+                severity = SEVERITY_MEDIUM
+        return evt
 
     def _print(self, severity, msg, source="*"):
         print "%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY_PRINT[severity], msg)
