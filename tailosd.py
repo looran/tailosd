@@ -89,20 +89,24 @@ class Tailosd(object):
         nitem = 0
         with open(self.conf_file) as ffile:
             for nline, line in enumerate(ffile):
+                if self.debug: print(line)
                 if line == "\n" or line.startswith('#'): continue
-                e = shlex.split(line)
-                if len(e) != 3:
+                try:
+                    e = shlex.split(line)
+                    if len(e) < 3: raise Exception()
+                    if e[CONF_SOURCE] not in self.conf: self.conf[e[CONF_SOURCE]] = dict()
+                    if e[CONF_ACTION] in SEVERITY_CHOICES or e[CONF_ACTION] == "drop":
+                        self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
+                    elif e[CONF_ACTION] == "cut-line-start":
+                        self.conf[e[CONF_SOURCE]]["cut-line-start"] = e[CONF_OPT]
+                    else:
+                        sev, attr = e[CONF_ACTION].split("-")
+                        if len(res) < 2: raise Exception()
+                        if sev not in self.conf[e[CONF_SOURCE]]: self.conf[e[CONF_SOURCE]][sev] = dict()
+                        self.conf[e[CONF_SOURCE]][sev][attr] = e[CONF_OPT]
+                except:
                     self._print(SEVERITY_HIGH, "tailosd: configuration line %d invalid: %s" % (nline+1, line.rstrip()))
                     continue
-                if e[CONF_SOURCE] not in self.conf: self.conf[e[CONF_SOURCE]] = dict()
-                if e[CONF_ACTION] in SEVERITY_CHOICES or e[CONF_ACTION] == "drop":
-                    self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
-                elif e[CONF_ACTION] == "cut-line-start":
-                    self.conf[e[CONF_SOURCE]]["cut-line-start"] = e[CONF_OPT]
-                else:
-                    sev, attr = e[CONF_ACTION].split("-")
-                    if sev not in self.conf[e[CONF_SOURCE]]: self.conf[e[CONF_SOURCE]][sev] = dict()
-                    self.conf[e[CONF_SOURCE]][sev][attr] = e[CONF_OPT]
                 nitem += 1
         if self.debug:
             print("conf: %s" % self.conf)
