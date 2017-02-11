@@ -23,17 +23,17 @@ def _sighup(signal, frame):
     _w.reload_conf()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='OSD file tailer')
+    parser = argparse.ArgumentParser(description='Tail files with On Screen Display output')
     parser.add_argument('-d', dest='debug', action='store_true',
                         help='Debug mode')
     parser.add_argument('-f', dest='config_file',
                         help='Configuration file for severity filters and colors')
     parser.add_argument('-r', dest='reload', action='store_true',
-                        help='Trigger reload of filter rules in running instance')
+                        help='Trigger reload of configuration file in running instance')
     parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
                         help='Log level [default=%s]' % tailosd.SEVERITY_DEFAULT)
     parser.add_argument('target', nargs='*',
-                        help='File paths to monitor | \'systemd\'')
+                        help='File paths to monitor | systemd')
     args = parser.parse_args()
 
     if args.reload:
