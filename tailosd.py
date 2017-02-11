@@ -41,13 +41,14 @@ CONF_ACTION = 0
 CONF_SOURCE = 1
 CONF_OPT = 2
 
+SEVERITY_DROP = -2
 SEVERITY_INFO = -1
 SEVERITY_LOW = 0
 SEVERITY_UNKNOWN = 1
 SEVERITY_MEDIUM = 2
 SEVERITY_HIGH = 3
 SEVERITY_CHOICES = collections.OrderedDict([("info", SEVERITY_INFO), ("low", SEVERITY_LOW), ("unknown", SEVERITY_UNKNOWN), ("medium", SEVERITY_MEDIUM), ("high", SEVERITY_HIGH)])
-SEVERITY_DEFAULT = "unknown"
+SEVERITY_DEFAULT = "info"
 SEVERITY_DEFAULT_VALUES = {
 	SEVERITY_HIGH: {"color": "red", "timeout": 12},
 	SEVERITY_MEDIUM: {"color": "orange", "timeout":9},
@@ -55,13 +56,15 @@ SEVERITY_DEFAULT_VALUES = {
 	SEVERITY_LOW: {"color": "blue", "timeout":7},
 	SEVERITY_INFO: {"color": "green", "timeout":6},
 }
-SEVERITY_PRINT = { SEVERITY_UNKNOWN: "---- ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
+SEVERITY_PRINT = { SEVERITY_DROP: "DROP ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_UNKNOWN: "UNKN ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
 
 class Tailosd(object):
     def __init__(self, targets, conf_file, loglevel, debug=False):
         self.targets = targets
 	self.conf_file = conf_file
         self.loglevel = loglevel
+        if debug:
+            print("loglevel: %d" % loglevel)
 	self.debug = debug
         self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
@@ -92,7 +95,7 @@ class Tailosd(object):
                     self._print(SEVERITY_HIGH, "tailosd: configuration line %d invalid: %s" % (nline+1, line.rstrip()))
                     continue
                 if e[CONF_SOURCE] not in self.conf: self.conf[e[CONF_SOURCE]] = dict()
-                if e[CONF_ACTION] in SEVERITY_CHOICES:
+                if e[CONF_ACTION] in SEVERITY_CHOICES or e[CONF_ACTION] == "drop":
                     self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
                 elif e[CONF_ACTION] == "drop-line-start":
                     self.conf[e[CONF_SOURCE]]["drop-line-start"] = e[CONF_OPT]
@@ -139,9 +142,12 @@ class Tailosd(object):
         if "drop-line-start" in self.conf[source]:
 	    message = message[int(self.conf[source]["drop-line-start"]):]
 	for f in self.conf["filters"]:
-            if f[CONF_ACTION] in SEVERITY_CHOICES and (f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]):
+            if f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]:
                 if f[CONF_OPT] in message:
-                    severity = SEVERITY_CHOICES[f[CONF_ACTION]]
+                    if f[CONF_ACTION] == "drop":
+                        severity = SEVERITY_DROP
+                    elif f[CONF_ACTION] in SEVERITY_CHOICES:
+                        severity = SEVERITY_CHOICES[f[CONF_ACTION]]
         return severity, message
 
     def _print(self, severity, msg, source="*"):

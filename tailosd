@@ -75,5 +75,5 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, _sigint)
     signal.signal(signal.SIGHUP, _sighup)
 
-    _w = tailosd.Tailosd(target, args.config_file, args.loglevel, args.debug)
+    _w = tailosd.Tailosd(target, args.config_file, loglevel, args.debug)
     _w.run()
