@@ -1,7 +1,7 @@
 tailosd
 =======
 
-#### Tail files with On Screen Display output
+*Tail files with On Screen Display output*
 
 ```bash
 tailosd [-h] [-d] [-f CONFIG_FILE] [-r]
@@ -55,9 +55,18 @@ kate /home/user/.tailosd.conf ; tailosd -r
 
 ### Install
 
+From the git:
+
 ```bash
-$ git clone 
+$ git clone https://github.com/looran/tailosd.git
+$ cd tailosd/
 $ sudo python setup.py install
+```
+
+The copy and edit the configuration file example, for example to your home directory:
+
+```bash
+$ cp tailosd_example.conf ~/.tailosd.conf
 ```
 
 #### Dependencies
