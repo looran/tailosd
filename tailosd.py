@@ -78,7 +78,7 @@ class Tailosd(object):
 
     def reload_conf(self):
         # self.conf["filters"] = list((sevnum, source, match))
-        # self.conf[source]["drop-line-start"] = list((sevnum, match))
+        # self.conf[source]["cut-line-start"] = list((sevnum, match))
         # self.conf[source][sevnum]["color"] = "colorname"
         # self.conf[source][sevnum]["timeout"] = toval
         self.conf = { "filters": list() }
@@ -97,8 +97,8 @@ class Tailosd(object):
                 if e[CONF_SOURCE] not in self.conf: self.conf[e[CONF_SOURCE]] = dict()
                 if e[CONF_ACTION] in SEVERITY_CHOICES or e[CONF_ACTION] == "drop":
                     self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
-                elif e[CONF_ACTION] == "drop-line-start":
-                    self.conf[e[CONF_SOURCE]]["drop-line-start"] = e[CONF_OPT]
+                elif e[CONF_ACTION] == "cut-line-start":
+                    self.conf[e[CONF_SOURCE]]["cut-line-start"] = e[CONF_OPT]
                 else:
                     sev, attr = e[CONF_ACTION].split("-")
                     if sev not in self.conf[e[CONF_SOURCE]]: self.conf[e[CONF_SOURCE]][sev] = dict()
@@ -139,8 +139,8 @@ class Tailosd(object):
         severity = SEVERITY_UNKNOWN
         if source not in self.conf:
             source = "*"
-        if "drop-line-start" in self.conf[source]:
-	    message = message[int(self.conf[source]["drop-line-start"]):]
+        if "cut-line-start" in self.conf[source]:
+	    message = message[int(self.conf[source]["cut-line-start"]):]
 	for f in self.conf["filters"]:
             if f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]:
                 if f[CONF_OPT] in message:
