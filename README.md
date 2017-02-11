@@ -32,9 +32,10 @@ $ tailosd -f tailosd_example.conf systemd
 ```
 
 The configuration file contains rules to categorise severity, set color and timeout of messages.
-See [tailosd_example.conf](tailosd_example.conf) for example.
 
-Trigger reload of filters in running tailosd instance:
+See [tailosd_example.conf](tailosd_example.conf) for example syntax.
+
+Trigger reload of configuration in running tailosd instance:
 ```bash
 $ tailosd -r
 ```
@@ -47,9 +48,7 @@ $ tailosd file.log
 
 ### Notes on tailing system logs
 
-When displaying system logs, it can be usefull to quicly edit the configuration rules at runtime, to ignore some anoying messages for example.
-To achieve this, you could bind commands like the following to a keyboard shortcut.
-
+When displaying system logs, it can be usefull to quicly edit the configuration rules at runtime, to ignore some anoying messages for example. To achieve this, you could bind commands like the following to a keyboard shortcut.
 ```bash
 kate /home/user/.tailosd.conf ; tailosd -r
 ```
