@@ -20,12 +20,14 @@ def _sigint(signal, frame):
 
 def _sighup(signal, frame):
     print('sighup, reloading filters')
-    _w.reload_filters()
+    _w.reload_conf()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='OSD file tailer')
-    parser.add_argument('-f', dest='filters',
-                        help='Filtering rules file')
+    parser.add_argument('-d', dest='debug', action='store_true',
+                        help='Debug mode')
+    parser.add_argument('-f', dest='config_file',
+                        help='Configuration file for severity filters and colors')
     parser.add_argument('-r', dest='reload', action='store_true',
                         help='Trigger reload of filter rules in running instance')
     parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
@@ -73,5 +75,5 @@ if __name__ == "__main__":
     signal.signal(signal.SIGINT, _sigint)
     signal.signal(signal.SIGHUP, _sighup)
 
-    _w = tailosd.Tailosd(target, args.filters, args.loglevel)
+    _w = tailosd.Tailosd(target, args.config_file, args.loglevel, args.debug)
     _w.run()

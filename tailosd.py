@@ -37,47 +37,35 @@ import shlex
 
 import aosd_text_scroll
 
-SEVERITY_UNINITIALIZED = -1
-SEVERITY_INFO = 0
-SEVERITY_LOW = 1
+CONF_ACTION = 0
+CONF_SOURCE = 1
+CONF_OPT = 2
+
+SEVERITY_INFO = -1
+SEVERITY_LOW = 0
+SEVERITY_UNKNOWN = 1
 SEVERITY_MEDIUM = 2
 SEVERITY_HIGH = 3
-SEVERITY = {
-    SEVERITY_UNINITIALIZED: "---- ",
-    SEVERITY_INFO:   "INFO ",
-    SEVERITY_LOW:    "LOW  ",
-    SEVERITY_MEDIUM: "MED  ",
-    SEVERITY_HIGH:   "HIGH ",
+SEVERITY_CHOICES = collections.OrderedDict([("info", SEVERITY_INFO), ("low", SEVERITY_LOW), ("unknown", SEVERITY_UNKNOWN), ("medium", SEVERITY_MEDIUM), ("high", SEVERITY_HIGH)])
+SEVERITY_DEFAULT = "unknown"
+SEVERITY_DEFAULT_VALUES = {
+	SEVERITY_HIGH: {"color": "red", "timeout": 12},
+	SEVERITY_MEDIUM: {"color": "orange", "timeout":9},
+	SEVERITY_UNKNOWN: {"color": "white", "timeout": 6},
+	SEVERITY_LOW: {"color": "blue", "timeout":7},
+	SEVERITY_INFO: {"color": "green", "timeout":6},
 }
-SEVERITY_CHOICES = collections.OrderedDict([("info", 0), ("low", 1), ("medium", 2), ("high", 3)])
-SEVERITY_DEFAULT = "info"
-SEVERITY_COLORS = {
-    SEVERITY_UNINITIALIZED: "white",
-    SEVERITY_INFO:   "green",
-    SEVERITY_LOW:    "blue",
-    SEVERITY_MEDIUM: "orange",
-    SEVERITY_HIGH:   "red",
-}
-SEVERITY_TIMEOUT = {
-    SEVERITY_UNINITIALIZED: 6,
-    SEVERITY_INFO:   6,
-    SEVERITY_LOW:    7,
-    SEVERITY_MEDIUM: 9,
-    SEVERITY_HIGH:   12,
-}
-
-FILTER_ACTION = 0
-FILTER_SOURCE = 1
-FILTER_OPT = 2
+SEVERITY_PRINT = { SEVERITY_UNKNOWN: "---- ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
 
 class Tailosd(object):
-    def __init__(self, targets, filters_file, loglevel):
+    def __init__(self, targets, conf_file, loglevel, debug=False):
         self.targets = targets
-	self.filters_file = filters_file
+	self.conf_file = conf_file
         self.loglevel = loglevel
+	self.debug = debug
         self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
-	self.reload_filters()
+	self.reload_conf()
 
     def run(self):
         if "systemd" in self.targets:
@@ -85,26 +73,43 @@ class Tailosd(object):
         else:
             self._run_multitail()
 
-    def reload_filters(self):
-        self.filters = list()
-        if self.filters_file is None:
-	    self._print(SEVERITY_INFO, "tailosd: no filters loaded")
+    def reload_conf(self):
+        # self.conf["filters"] = list((sevnum, source, match))
+        # self.conf[source]["drop-line-start"] = list((sevnum, match))
+        # self.conf[source][sevnum]["color"] = "colorname"
+        # self.conf[source][sevnum]["timeout"] = toval
+        self.conf = { "filters": list() }
+	self.conf["*"] = SEVERITY_DEFAULT_VALUES
+        if self.conf_file is None:
+	    self._print(SEVERITY_INFO, "tailosd: no configuration loaded")
             return
-        with open(self.filters_file) as ffile:
+        nitem = 0
+        with open(self.conf_file) as ffile:
             for nline, line in enumerate(ffile):
                 if line == "\n" or line.startswith('#'): continue
-                filt = shlex.split(line)
-                if len(filt) != 3:
-                    self._print(SEVERITY_HIGH, "tailosd: filter invalid: [line %d] %s" % (nline+1, line.rstrip()))
+                e = shlex.split(line)
+                if len(e) != 3:
+                    self._print(SEVERITY_HIGH, "tailosd: configuration line %d invalid: %s" % (nline+1, line.rstrip()))
                     continue
-                self.filters.append(filt)
-	self._print(SEVERITY_INFO, "tailosd: filters loaded (%d)" % len(self.filters))
+                if e[CONF_SOURCE] not in self.conf: self.conf[e[CONF_SOURCE]] = dict()
+                if e[CONF_ACTION] in SEVERITY_CHOICES:
+                    self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
+                elif e[CONF_ACTION] == "drop-line-start":
+                    self.conf[e[CONF_SOURCE]]["drop-line-start"] = e[CONF_OPT]
+                else:
+                    sev, attr = e[CONF_ACTION].split("-")
+                    if sev not in self.conf[e[CONF_SOURCE]]: self.conf[e[CONF_SOURCE]][sev] = dict()
+                    self.conf[e[CONF_SOURCE]][sev][attr] = e[CONF_OPT]
+                nitem += 1
+        if self.debug:
+            print("conf: %s" % self.conf)
+	self._print(SEVERITY_INFO, "tailosd: conf loaded (%d items)" % nitem)
 
     def _run_multitail(self):
         import multitail
         for fn, line in multitail.multitail(self.targets["files"]):
             severity, msg = self._filter(fn, line.rstrip())
-            self._print(severity, msg)
+            self._print(severity, msg, fn)
 
     def _run_systemd(self):
         import select
@@ -128,21 +133,24 @@ class Tailosd(object):
                 print(traceback.print_exc())
 
     def _filter(self, source, message):
-        severity = SEVERITY_UNINITIALIZED
-	for f in self.filters:
-            if f[FILTER_SOURCE] == "*" or source == f[FILTER_SOURCE]:
-                if f[FILTER_ACTION] == "drop-line-start":
-                    message = message[int(f[FILTER_OPT]):]
-                elif severity == SEVERITY_UNINITIALIZED and f[FILTER_ACTION] in SEVERITY_CHOICES:
-		    if f[FILTER_OPT] in message:
-			severity = SEVERITY_CHOICES[f[FILTER_ACTION]]
+        severity = SEVERITY_UNKNOWN
+        if source not in self.conf:
+            source = "*"
+        if "drop-line-start" in self.conf[source]:
+	    message = message[int(self.conf[source]["drop-line-start"]):]
+	for f in self.conf["filters"]:
+            if f[CONF_ACTION] in SEVERITY_CHOICES and (f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]):
+                if f[CONF_OPT] in message:
+                    severity = SEVERITY_CHOICES[f[CONF_ACTION]]
         return severity, message
 
-    def _print(self, severity, msg):
-        print "%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY[severity], msg)
+    def _print(self, severity, msg, source="*"):
+        print "%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY_PRINT[severity], msg)
         if severity < self.loglevel:
             return
-        color = SEVERITY_COLORS[severity]
-        timeout = SEVERITY_TIMEOUT[severity]
+        if source not in self.conf or severity not in self.conf[source] or "color" not in self.conf[source][severity]:
+            source = "*"
+        color = self.conf[source][severity]["color"]
+        timeout = self.conf[source][severity]["timeout"]
         self.osd.append(msg, color, timeout=timeout)
 
