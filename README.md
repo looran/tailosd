@@ -1,7 +1,7 @@
 tailosd
 =======
 
-Linux On Screen Display file tailer.
+#### Linux On Screen Display file tailer.
 
 ```bash
 tailosd [-h] [-d] [-f CONFIG_FILE] [-r]
@@ -19,10 +19,10 @@ optional arguments:
   -f CONFIG_FILE        Configuration file for severity filters and colors
   -r                    Trigger reload of filter rules in running instance
   -l {info,low,unknown,medium,high}
-                        Log level [default=unknown]
+                        Log level [default=info]
 ```
 
-### Example: OSD system logs tail
+### Example: Tail system logs
 
 ```bash
 $ tailosd -f tailosd_example.conf /var/log/syslog
