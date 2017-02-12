@@ -1,31 +1,7 @@
-# tailosd - OSD file tailer
+# tailosd - Tail files with On Screen Display output
 
 # Copyright (c) 2014,2016 Laurent Ghigonis <laurent@gouloum.fr>
 # Copyright (c) 2014,2015 Pierre-Olivier Vauboin <povauboin@gmail.com>
-
-# Permission to use, copy, modify, and distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
-
-# OLD TODO
-# * move user configuration (colors, fonts, ...) to ~/.config/watchme/conf
-# * click on text makes text disappear
-# * longer timeout for higher severity
-# * number of critical events displayed in system tray (timeout 5 min)
-
-# OLD OLD TODO
-# * linewrap: display multiline entries
-# * main process multitail: open (r) file then droppriv
-# * ability to start as normal user, and not droppriv
-# * subprocess defunct handling
-# * quick terminal UI: npyscreen, interactive log scroll, actions
 
 import sys
 import os
@@ -57,6 +33,7 @@ SEVERITY_DEFAULT_VALUES = {
 	SEVERITY_INFO: {"color": "green", "timeout":6},
 }
 SEVERITY_PRINT = { SEVERITY_DROP: "DROP ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_UNKNOWN: "UNKN ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
+SEVERITY_PAUSE_BUFFER_DEFAULT = SEVERITY_MEDIUM
 
 class Tailosd(object):
     def __init__(self, targets, conf_file, loglevel, debug=False):
@@ -66,6 +43,8 @@ class Tailosd(object):
         if debug:
             print("loglevel: %d" % loglevel)
 	self.debug = debug
+        self.paused = False
+        self.buffer = list()
         self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
 	self.reload_conf()
@@ -79,8 +58,9 @@ class Tailosd(object):
     def reload_conf(self):
         # self.conf["filters"] = list((sevnum, source, match))
         # self.conf[source]["cut-line-start"] = list((sevnum, match))
+        # self.conf[source]["pause-buffer-severity"] = sevnum
         # self.conf[source][sevnum]["color"] = "colorname"
-        # self.conf[source][sevnum]["timeout"] = toval
+        # self.conf[source][sevnum]["timeout"] = timeoutvalue
         self.conf = { "filters": list() }
 	self.conf["*"] = SEVERITY_DEFAULT_VALUES
         if self.conf_file is None:
@@ -98,7 +78,9 @@ class Tailosd(object):
                     if e[CONF_ACTION] in SEVERITY_CHOICES or e[CONF_ACTION] == "drop":
                         self.conf["filters"].append((e[CONF_ACTION], e[CONF_SOURCE], e[CONF_OPT]))
                     elif e[CONF_ACTION] == "cut-line-start":
-                        self.conf[e[CONF_SOURCE]]["cut-line-start"] = e[CONF_OPT]
+                        self.conf[e[CONF_SOURCE]]["cut-line-start"] = int(e[CONF_OPT])
+                    elif e[CONF_ACTION] == "pause-buffer-severity":
+                        self.conf[e[CONF_SOURCE]]["pause-buffer-severity"] = SEVERITY_CHOICES[e[CONF_OPT]]
                     else:
                         sev, attr = e[CONF_ACTION].split("-")
                         if len(res) < 2: raise Exception()
@@ -111,6 +93,21 @@ class Tailosd(object):
         if self.debug:
             print("conf: %s" % self.conf)
 	self._print(SEVERITY_INFO, "tailosd: conf loaded (%d items)" % nitem)
+
+    def pause(self):
+        if self.paused is True:
+            return
+        self._print(SEVERITY_INFO, "tailosd: pausing")
+        self.paused = True
+
+    def resume(self):
+        if self.paused is False:
+            return
+        self.paused = False
+        for l in self.buffer:
+            self.osd.append(l[0], l[1], l[2])
+        self._print(SEVERITY_INFO, "tailosd: resumed, %d events where buffered" % len(self.buffer))
+        self.buffer = list()
 
     def _run_multitail(self):
         import multitail
@@ -143,8 +140,9 @@ class Tailosd(object):
         severity = SEVERITY_UNKNOWN
         if source not in self.conf:
             source = "*"
-        if "cut-line-start" in self.conf[source]:
-	    message = message[int(self.conf[source]["cut-line-start"]):]
+        cutstart = self._conf_get(source, "cut-line-start")
+        if cutstart is not None:
+	    message = message[cutstart:]
 	for f in self.conf["filters"]:
             if f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]:
                 if f[CONF_OPT] in message:
@@ -186,5 +184,17 @@ class Tailosd(object):
             source = "*"
         color = self.conf[source][severity]["color"]
         timeout = self.conf[source][severity]["timeout"]
-        self.osd.append(msg, color, timeout=timeout)
+        if self.paused:
+            if severity >= self._conf_get(source, "pause-buffer-severity", SEVERITY_PAUSE_BUFFER_DEFAULT):
+                self.buffer.append((msg, color, timeout))
+        else:
+            self.osd.append(msg, color, timeout)
+
+    def _conf_get(self, source, action, defaultval=None):
+        val = None
+        if source not in self.conf and source != '*':
+            source = '*'
+        if source in self.conf and action in self.conf[source]:
+            return self.conf[source][action]
+        return defaultval
 
