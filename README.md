@@ -4,8 +4,8 @@ tailosd
 *Tail files with On Screen Display output*
 
 ```bash
-tailosd [-h] [-d] [-f CONFIG_FILE] [-r]
-               [-l {info,low,unknown,medium,high}]
+tailosd [-h] [-d] [-f CONFIG_FILE] [-l {info,low,unknown,medium,high}]
+               [-p] [-P] [-r]
                [target [target ...]]
 
 Tail files with On Screen Display output
@@ -17,10 +17,11 @@ optional arguments:
   -h, --help            show this help message and exit
   -d                    Debug mode
   -f CONFIG_FILE        Configuration file for severity filters and colors
-  -r                    Trigger reload of configuration file in running
-                        instance
   -l {info,low,unknown,medium,high}
                         Log level [default=info]
+  -p                    Trigger pause of OSD display in running instance
+  -P                    Trigger resume of OSD display in running instance
+  -r                    Trigger reload of configuration in running instance
 ```
 
 ### Example: Tail system logs
@@ -51,7 +52,16 @@ $ tailosd file.log
 
 When displaying system logs, it is often usefull to quicly edit the configuration rules at runtime, to ignore some new anoying messages for example. To achieve this, you could bind commands like the following to a keyboard shortcut.
 ```bash
-kate /home/user/.tailosd.conf ; tailosd -r
+$ kate /home/user/.tailosd.conf ; tailosd -r
+```
+
+When the screenlock is active, or when performing particular activities, you might want to stop displaying the logs, and be informed of the events later.
+```bash
+Bind the following to screenlock activation, to pause OSD display:
+$ tailosd -p
+
+Unpause OSD display and display buffered events (see configuration option "pause-buffer-severity"):
+$ tailosd -P
 ```
 
 ### Install
