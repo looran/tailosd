@@ -37,14 +37,14 @@ if __name__ == "__main__":
                         help='Debug mode')
     parser.add_argument('-f', dest='config_file',
                         help='Configuration file for severity filters and colors')
+    parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
+                        help='Log level [default=%s]' % tailosd.SEVERITY_DEFAULT)
     parser.add_argument('-p', dest='pause', action='store_true',
                         help='Trigger pause of OSD display in running instance')
     parser.add_argument('-P', dest='resume', action='store_true',
                         help='Trigger resume of OSD display in running instance')
     parser.add_argument('-r', dest='reload', action='store_true',
                         help='Trigger reload of configuration in running instance')
-    parser.add_argument('-l', dest='loglevel', choices=tailosd.SEVERITY_CHOICES,
-                        help='Log level [default=%s]' % tailosd.SEVERITY_DEFAULT)
     parser.add_argument('target', nargs='*',
                         help='File paths to monitor | systemd')
     args = parser.parse_args()
