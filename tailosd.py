@@ -29,8 +29,8 @@ SEVERITY_DEFAULT_VALUES = {
 	SEVERITY_HIGH: {"color": "red", "timeout": 12},
 	SEVERITY_MEDIUM: {"color": "orange", "timeout":9},
 	SEVERITY_UNKNOWN: {"color": "white", "timeout": 6},
-	SEVERITY_LOW: {"color": "blue", "timeout":7},
-	SEVERITY_INFO: {"color": "green", "timeout":6},
+	SEVERITY_LOW: {"color": "green", "timeout":6},
+	SEVERITY_INFO: {"color": "blue", "timeout":6},
 }
 SEVERITY_PRINT = { SEVERITY_DROP: "DROP ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_UNKNOWN: "UNKN ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
 SEVERITY_PAUSE_BUFFER_DEFAULT = SEVERITY_MEDIUM
