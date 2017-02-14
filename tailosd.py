@@ -83,7 +83,7 @@ class Tailosd(object):
                         self.conf[e[CONF_SOURCE]]["pause-buffer-severity"] = SEVERITY_CHOICES[e[CONF_OPT]]
                     else:
                         sev, attr = e[CONF_ACTION].split("-")
-                        if len(res) < 2: raise Exception()
+                        sev = SEVERITY_CHOICES[sev]
                         if sev not in self.conf[e[CONF_SOURCE]]: self.conf[e[CONF_SOURCE]][sev] = dict()
                         self.conf[e[CONF_SOURCE]][sev][attr] = e[CONF_OPT]
                 except:
