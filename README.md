@@ -83,6 +83,6 @@ $ cp tailosd_example.conf ~/.tailosd.conf
 #### Dependencies
 
 * libaosd
-* python-aosd (in pip)
-* python-multitail (in pip)
+* python-aosd
+* python-multitail
 
