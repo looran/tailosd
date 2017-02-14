@@ -10,6 +10,7 @@ import time
 import traceback
 import collections
 import shlex
+import copy
 
 import aosd_text_scroll
 
@@ -62,7 +63,7 @@ class Tailosd(object):
         # self.conf[source][sevnum]["color"] = "colorname"
         # self.conf[source][sevnum]["timeout"] = timeoutvalue
         self.conf = { "filters": list() }
-	self.conf["*"] = SEVERITY_DEFAULT_VALUES
+	self.conf["*"] = copy.deepcopy(SEVERITY_DEFAULT_VALUES)
         if self.conf_file is None:
 	    self._print(SEVERITY_INFO, "tailosd: no configuration loaded")
             return
