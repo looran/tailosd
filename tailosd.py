@@ -156,9 +156,6 @@ class Tailosd(object):
         return severity, message
 
     def _filter_systemd(self, source, message, sysd_dct):
-	import warnings
-	warnings.warn("XXX systemd ported from watchme without testing, needs testing !!!")
-	warnings.warn("XXX the best would probably be some configuration file syntax for systemd instead of this code.")
         if not evt.sysd_dct:
             return evt # not for us
         # By default use PRIORITY field from systemd to set OSD severity color
