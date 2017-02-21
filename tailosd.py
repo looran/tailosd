@@ -131,7 +131,9 @@ class Tailosd(object):
                 journal.process() # This is necessary to reset fd readable state
                 continue
             try:
-                severity, msg = self._filter(entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'), entry['MESSAGE'].encode('ascii', 'ignore'), entry)
+                syslog_id = entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore') if 'SYSLOG_IDENTIFIER' in entry else 'systemd'
+                message = entry['MESSAGE'].encode('ascii', 'ignore') if 'MESSAGE' in entry else 'none'
+                severity, msg = self._filter(syslog_id, message, entry)
                 self._print(severity, msg)
             except Exception, e:
                 print(e)
