@@ -60,7 +60,8 @@ When the screenlock is active, or when performing particular activities, you mig
 Bind the following to screenlock activation, to pause OSD display:
 $ tailosd -p
 
-Unpause OSD display and display buffered events (see configuration option "pause-buffer-severity"):
+Unpause OSD display and display buffered events
+(see configuration option "pause-buffer-severity"):
 $ tailosd -P
 ```
 
