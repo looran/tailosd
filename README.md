@@ -115,5 +115,5 @@ If your window manager does not support transparency, use [xcompmgr](https://wik
 ```
 xcompmgr(1)
 -c  Client-side compositing with soft shadows and translucency support.
--C  When -c is specified, attempts to avoid painting shadows on pan-els and docks.
+-C  When -c is specified, attempts to avoid painting shadows on panels and docks.
 ```
