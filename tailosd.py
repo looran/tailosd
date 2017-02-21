@@ -11,6 +11,7 @@ import traceback
 import collections
 import shlex
 import copy
+import errno
 
 import aosd_text_scroll
 
@@ -127,8 +128,8 @@ class Tailosd(object):
         while True:
             try:
                 poll.poll()
-            except IOError as e:
-                if e.errno != EINTR: # check for legitimate signal
+            except select.error as (code, msg):
+                if code != errno.EINTR: # check for legitimate signal
                     raise
             entry = journal.get_next()
             if not entry:
