@@ -125,7 +125,11 @@ class Tailosd(object):
         poll = select.poll()
         poll.register(journal.fileno(), journal.get_events())
         while True:
-            poll.poll()
+            try:
+                poll.poll()
+            except IOError as e:
+                if e.errno != EINTR: # check for legitimate signal
+                    raise
             entry = journal.get_next()
             if not entry:
                 journal.process() # This is necessary to reset fd readable state
