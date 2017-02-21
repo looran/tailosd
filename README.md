@@ -86,3 +86,17 @@ $ cp tailosd_example.conf ~/.tailosd.conf
 * python-aosd
 * python-multitail
 
+On Ubuntu (tested on 16.10):
+```bash
+Install libaosd
+$ sudo apt install libaosd2 libaosd-dev
+
+Install python-aosd
+$ sudo apt install cython
+$ sudo apt install libcairo2-dev libpango1.0-dev
+$ sudo apt install python-cairo python-cairo-dev
+$ sudo pip install https://github.com/arminha/python-aosd/archive/0.2.5.tar.gz
+
+Install python-multitail
+$ sudo pip install multitail
+```
