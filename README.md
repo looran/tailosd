@@ -85,6 +85,7 @@ $ cp tailosd_example.conf ~/.tailosd.conf
 * libaosd
 * python-aosd
 * python-multitail
+* For systemd support: python-systemd
 
 On Ubuntu (tested on 16.10):
 ```bash
@@ -99,4 +100,7 @@ $ sudo pip install https://github.com/arminha/python-aosd/archive/0.2.5.tar.gz
 
 Install python-multitail
 $ sudo pip install multitail
+
+Install python-systemd for systemd support
+sudo apt install python-systemd
 ```
