@@ -108,7 +108,7 @@ $ sudo apt install python-systemd
 
 ### Troubleshooting
 
-#### Background of OSD messages are not transparent and look ugly
+#### Background of OSD messages is not transparent and it looks ugly
 
 If your window manager does not support transparency, use [xcompmgr](https://wiki.archlinux.org/index.php/Xcompmgr). Look for -c and -C :
 
