@@ -24,6 +24,8 @@ optional arguments:
   -r                    Trigger reload of configuration in running instance
 ```
 
+[![Tail system logs with On Screen Display output](https://github.com/looran/tailosd/raw/master/demo/tailosd_demo_crop.gif)](https://gouloum.fr/x/tailosd_demo.ogv)
+
 ### Example: Tail system logs
 
 ```bash
