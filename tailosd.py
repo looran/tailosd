@@ -11,6 +11,7 @@ import traceback
 import collections
 import shlex
 import copy
+import errno
 
 import aosd_text_scroll
 
@@ -125,13 +126,19 @@ class Tailosd(object):
         poll = select.poll()
         poll.register(journal.fileno(), journal.get_events())
         while True:
-            poll.poll()
+            try:
+                poll.poll()
+            except select.error as (code, msg):
+                if code != errno.EINTR: # check for legitimate signal
+                    raise
             entry = journal.get_next()
             if not entry:
                 journal.process() # This is necessary to reset fd readable state
                 continue
             try:
-                severity, msg = self._filter(entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore'), entry['MESSAGE'].encode('ascii', 'ignore'), entry)
+                syslog_id = entry['SYSLOG_IDENTIFIER'].encode('ascii', 'ignore') if 'SYSLOG_IDENTIFIER' in entry else 'systemd'
+                message = entry['MESSAGE'].encode('ascii', 'ignore') if 'MESSAGE' in entry else 'none'
+                severity, msg = self._filter(syslog_id, message, entry)
                 self._print(severity, msg)
             except Exception, e:
                 print(e)
