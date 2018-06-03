@@ -36,6 +36,7 @@ SEVERITY_DEFAULT_VALUES = {
 }
 SEVERITY_PRINT = { SEVERITY_DROP: "DROP ", SEVERITY_INFO:   "INFO ", SEVERITY_LOW:    "LOW  ", SEVERITY_UNKNOWN: "UNKN ", SEVERITY_MEDIUM: "MED  ", SEVERITY_HIGH:   "HIGH " }
 SEVERITY_PAUSE_BUFFER_DEFAULT = SEVERITY_MEDIUM
+SEVERITY_RESUME_MAX = 50
 
 class Tailosd(object):
     def __init__(self, targets, conf_file, loglevel, debug=False):
@@ -105,10 +106,15 @@ class Tailosd(object):
     def resume(self):
         if self.paused is False:
             return
+        buffer_len_orig = len(self.buffer)
         self.paused = False
+        if len(self.buffer) > SEVERITY_RESUME_MAX:
+            self.buffer = self.buffer[-SEVERITY_RESUME_MAX:]
         for l in self.buffer:
             self.osd.append(l[0], l[1], l[2])
-        self._print(SEVERITY_INFO, "tailosd: resumed, %d events where buffered" % len(self.buffer))
+        self._print(SEVERITY_INFO, "tailosd: resumed, %d events where buffered" % buffer_len_orig)
+        if buffer_len_orig != len(self.buffer):
+            self._print(SEVERITY_INFO, "tailosd: buffer was too big, only showing last %d" % (len(self.buffer)))
         self.buffer = list()
 
     def _run_multitail(self):
