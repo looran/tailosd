@@ -41,16 +41,16 @@ SEVERITY_RESUME_MAX = 50
 class Tailosd(object):
     def __init__(self, targets, conf_file, loglevel, debug=False):
         self.targets = targets
-	self.conf_file = conf_file
+        self.conf_file = conf_file
         self.loglevel = loglevel
         if debug:
             print("loglevel: %d" % loglevel)
-	self.debug = debug
+        self.debug = debug
         self.paused = False
         self.buffer = list()
         self.osd = aosd_text_scroll.Aosd_text_scroll_thread()
         self.osd.start()
-	self.reload_conf()
+        self.reload_conf()
 
     def run(self):
         if "systemd" in self.targets:
@@ -65,9 +65,9 @@ class Tailosd(object):
         # self.conf[source][sevnum]["color"] = "colorname"
         # self.conf[source][sevnum]["timeout"] = timeoutvalue
         self.conf = { "filters": list() }
-	self.conf["*"] = copy.deepcopy(SEVERITY_DEFAULT_VALUES)
+        self.conf["*"] = copy.deepcopy(SEVERITY_DEFAULT_VALUES)
         if self.conf_file is None:
-	    self._print(SEVERITY_INFO, "tailosd: no configuration loaded")
+            self._print(SEVERITY_INFO, "tailosd: no configuration loaded")
             return
         nitem = 0
         with open(self.conf_file) as ffile:
@@ -95,7 +95,7 @@ class Tailosd(object):
                 nitem += 1
         if self.debug:
             print("conf: %s" % self.conf)
-	self._print(SEVERITY_INFO, "tailosd: conf loaded (%d items)" % nitem)
+        self._print(SEVERITY_INFO, "tailosd: conf loaded (%d items)" % nitem)
 
     def pause(self):
         if self.paused is True:
@@ -134,8 +134,8 @@ class Tailosd(object):
         while True:
             try:
                 poll.poll()
-            except select.error as (code, msg):
-                if code != errno.EINTR: # check for legitimate signal
+            except select.error as e:
+                if e.errno != errno.EINTR: # check for legitimate signal
                     raise
             entry = journal.get_next()
             if not entry:
@@ -146,7 +146,7 @@ class Tailosd(object):
                 message = entry['MESSAGE'].encode('ascii', 'ignore') if 'MESSAGE' in entry else 'none'
                 severity, msg = self._filter(syslog_id, message, entry)
                 self._print(severity, msg)
-            except Exception, e:
+            except Exception as e:
                 print(e)
                 print(traceback.print_exc())
 
@@ -156,8 +156,8 @@ class Tailosd(object):
             source = "*"
         cutstart = self._conf_get(source, "cut-line-start")
         if cutstart is not None:
-	    message = message[cutstart:]
-	for f in self.conf["filters"]:
+            message = message[cutstart:]
+        for f in self.conf["filters"]:
             if f[CONF_SOURCE] == "*" or source == f[CONF_SOURCE]:
                 if f[CONF_OPT] in message:
                     if f[CONF_ACTION] == "drop":
@@ -188,7 +188,7 @@ class Tailosd(object):
         return evt
 
     def _print(self, severity, msg, source="*"):
-        print "%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY_PRINT[severity], msg)
+        print("%s %s%s" % (time.strftime("%Y%m%d_%H%M"), SEVERITY_PRINT[severity], msg))
         if severity < self.loglevel:
             return
         if source not in self.conf or severity not in self.conf[source] or "color" not in self.conf[source][severity]:
