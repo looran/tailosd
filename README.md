@@ -1,3 +1,6 @@
+# This project is deprecated
+# Try to use https://github.com/looran/qosd instead !
+
 tailosd
 =======
 
